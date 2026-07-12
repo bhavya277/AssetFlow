@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List, Dict, Any
-from datetime import datetime
+from typing import Dict, Any
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user, RoleChecker, User
-from app.models.models import Asset, AssetCategory, Allocation, MaintenanceTask, Booking
+from app.core.dependencies import RoleChecker, User
+from app.models.models import Asset, MaintenanceTask
+from app.analytics import get_categories_utilization, get_maintenance_trends
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -24,17 +24,7 @@ def get_report_summary(
     total_maint_cost = db.query(func.sum(MaintenanceTask.cost)).scalar() or 0.0
 
     # 3. Category Breakdown Utilization
-    categories = db.query(AssetCategory).all()
-    categories_utilization = []
-    for cat in categories:
-        cat_total = db.query(Asset).filter(Asset.category_id == cat.id).count()
-        cat_allocated = db.query(Asset).filter(Asset.category_id == cat.id, Asset.status == "Allocated").count()
-        categories_utilization.append({
-            "category_name": cat.name,
-            "allocated": cat_allocated,
-            "total": cat_total,
-            "rate": round((cat_allocated / cat_total) * 100, 1) if cat_total > 0 else 0.0
-        })
+    categories_utilization = get_categories_utilization(db)
 
     # 4. Idle Assets (Status Available, ordered by health score descending)
     idle_assets_query = db.query(Asset).filter(Asset.status == "Available").order_by(Asset.health_score.desc()).limit(5).all()
@@ -69,15 +59,7 @@ def get_report_summary(
     ]
 
     # 6. Monthly Maintenance Trends (Area chart values)
-    # Seeded aggregates for previous months if database is new
-    maintenance_trends = [
-        {"month": "Jan", "cost": 1200.0},
-        {"month": "Feb", "cost": 900.0},
-        {"month": "Mar", "cost": 1600.0},
-        {"month": "Apr", "cost": 800.0},
-        {"month": "May", "cost": 2100.0},
-        {"month": "Jun", "cost": total_maint_cost if total_maint_cost > 0 else 1400.0}
-    ]
+    maintenance_trends = get_maintenance_trends(db)
 
     return {
         "total_assets_count": total_assets,

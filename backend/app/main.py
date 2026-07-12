@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
 from app.models.models import Department, AssetCategory
-from app.routers import auth, users, departments, categories, assets, allocations, bookings, maintenance, audits, notifications, reports
+from app.routers import auth, users, departments, categories, assets, allocations, bookings, maintenance, audits, notifications, reports, dashboard
 
 # Automatically create database tables
 Base.metadata.create_all(bind=engine)
@@ -62,6 +62,7 @@ app.include_router(maintenance.router, prefix=settings.API_V1_STR)
 app.include_router(audits.router, prefix=settings.API_V1_STR)
 app.include_router(notifications.router, prefix=settings.API_V1_STR)
 app.include_router(reports.router, prefix=settings.API_V1_STR)
+app.include_router(dashboard.router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():
