@@ -18,6 +18,7 @@ import {
   FileBadge,
   FileDown,
   Loader2,
+  Repeat,
 } from 'lucide-react';
 import axios from 'axios';
 import { generateAssetPassportPdf } from '../utils/pdf';
@@ -130,6 +131,8 @@ export const AssetPassport: React.FC = () => {
         return <Wrench className="h-4 w-4" />;
       case 'Audit':
         return <ShieldCheck className="h-4 w-4" />;
+      case 'Transfer':
+        return <Repeat className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }

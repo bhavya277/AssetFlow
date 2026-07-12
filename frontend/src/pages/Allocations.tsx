@@ -71,16 +71,30 @@ export const Allocations: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allocRes, transRes, assetsRes, usersRes] = await Promise.all([
+      const [allocRes, transRes, assetsRes] = await Promise.all([
         axios.get<Allocation[]>('/allocations/'),
         axios.get<Transfer[]>('/allocations/transfers'),
         axios.get<Asset[]>('/assets/'),
-        axios.get<User[]>('/users/'),
       ]);
       setAllocations(allocRes.data);
       setTransfers(transRes.data);
       setAssets(assetsRes.data);
-      setUsers(usersRes.data);
+
+      let usersData: User[] = [];
+      if (isManager) {
+        const usersRes = await axios.get<User[]>('/users/');
+        usersData = usersRes.data;
+      } else {
+        const empsRes = await axios.get<Array<{ user_id: number | null; full_name: string; email: string }>>('/users/employees');
+        usersData = empsRes.data
+          .filter(emp => emp.user_id !== null)
+          .map(emp => ({
+            id: emp.user_id as number,
+            full_name: emp.full_name,
+            email: emp.email
+          }));
+      }
+      setUsers(usersData);
     } catch (error) {
       console.error('Error fetching allocations data:', error);
       showToast('Failed to load allocation records', 'error');

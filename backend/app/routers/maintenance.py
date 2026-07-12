@@ -119,6 +119,9 @@ def update_maintenance_task(
                 f"Maintenance for asset '{asset.name if asset else 'ID ' + str(task.asset_id)}' has been marked completed.",
                 "alerts"
             )
+        elif task_update.status in ["In Progress", "Awaiting Parts"] and old_status not in ["In Progress", "Awaiting Parts"]:
+            if asset:
+                asset.status = "Under Maintenance"
 
     db.commit()
     db.refresh(task)

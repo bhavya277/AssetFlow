@@ -44,12 +44,12 @@ export const QRVisualizer: React.FC<{ value: string; className?: string }> = ({ 
       {/* Top-right square finder pattern */}
       <rect x="70" y="10" width="20" height="20" />
       <rect x="74" y="14" width="12" height="12" fill="white" className="dark:fill-zinc-900" />
-      <rect x="17" y="70" width="6" height="6" />
-
+      <rect x="77" y="17" width="6" height="6" />
+      
       {/* Bottom-left square finder pattern */}
       <rect x="10" y="70" width="20" height="20" />
       <rect x="14" y="74" width="12" height="12" fill="white" className="dark:fill-zinc-900" />
-      <rect x="77" y="17" width="6" height="6" />
+      <rect x="17" y="77" width="6" height="6" />
       
       {/* Random QR code pixels block */}
       <rect x="40" y="15" width="6" height="6" />

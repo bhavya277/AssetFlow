@@ -407,29 +407,35 @@ export const Dashboard: React.FC = () => {
       {/* Footer Info Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm lg:col-span-2">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-zinc-100 mb-4">Quick Workflows</h3>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-zinc-100 mb-4">
+            {isManager ? 'Quick Workflows' : 'Quick Actions'}
+          </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <a
-              href="/assets"
-              className="flex flex-col justify-between p-5 rounded-2xl bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/30 border border-indigo-100/50 dark:border-indigo-900/30 transition-all hover:scale-[1.01]"
-            >
-              <FolderOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mb-6" />
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Register Asset</h4>
-                <p className="text-xs text-slate-500 mt-1">Add new corporate physical hardware</p>
-              </div>
-            </a>
+            {isManager && (
+              <>
+                <a
+                  href="/assets"
+                  className="flex flex-col justify-between p-5 rounded-2xl bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/30 border border-indigo-100/50 dark:border-indigo-900/30 transition-all hover:scale-[1.01]"
+                >
+                  <FolderOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mb-6" />
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Register Asset</h4>
+                    <p className="text-xs text-slate-500 mt-1">Add new corporate physical hardware</p>
+                  </div>
+                </a>
 
-            <a
-              href="/allocations"
-              className="flex flex-col justify-between p-5 rounded-2xl bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30 border border-emerald-100/50 dark:border-emerald-900/30 transition-all hover:scale-[1.01]"
-            >
-              <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400 mb-6" />
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Allocate Asset</h4>
-                <p className="text-xs text-slate-500 mt-1">Assign hardware to verified team member</p>
-              </div>
-            </a>
+                <a
+                  href="/allocations"
+                  className="flex flex-col justify-between p-5 rounded-2xl bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30 border border-emerald-100/50 dark:border-emerald-900/30 transition-all hover:scale-[1.01]"
+                >
+                  <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400 mb-6" />
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Allocate Asset</h4>
+                    <p className="text-xs text-slate-500 mt-1">Assign hardware to verified team member</p>
+                  </div>
+                </a>
+              </>
+            )}
 
             <a
               href="/bookings"
@@ -441,6 +447,32 @@ export const Dashboard: React.FC = () => {
                 <p className="text-xs text-slate-500 mt-1">Book projectors, rooms or fleet vehicles</p>
               </div>
             </a>
+
+            {!isManager && (
+              <>
+                <a
+                  href="/maintenance"
+                  className="flex flex-col justify-between p-5 rounded-2xl bg-rose-50/50 hover:bg-rose-50 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 border border-rose-100/50 dark:border-rose-900/30 transition-all hover:scale-[1.01]"
+                >
+                  <Wrench className="h-6 w-6 text-rose-600 dark:text-rose-400 mb-6" />
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Report Issue</h4>
+                    <p className="text-xs text-slate-500 mt-1">Request maintenance for assigned assets</p>
+                  </div>
+                </a>
+
+                <a
+                  href="/assets"
+                  className="flex flex-col justify-between p-5 rounded-2xl bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/30 border border-indigo-100/50 dark:border-indigo-900/30 transition-all hover:scale-[1.01]"
+                >
+                  <FolderOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mb-6" />
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Browse Assets</h4>
+                    <p className="text-xs text-slate-500 mt-1">View company asset directory and passports</p>
+                  </div>
+                </a>
+              </>
+            )}
           </div>
         </div>
 
