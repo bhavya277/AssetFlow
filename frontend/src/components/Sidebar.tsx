@@ -13,7 +13,7 @@ import {
   BellRing,
   ChevronLeft,
   ChevronRight,
-  ShieldAlert,
+  Shield,
   LogOut,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -40,30 +40,30 @@ export const Sidebar: React.FC = () => {
 
   return (
     <motion.div
-      animate={{ width: collapsed ? 80 : 280 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="h-screen bg-slate-900 text-slate-100 flex flex-col justify-between sticky top-0 flex-shrink-0 border-r border-slate-800"
+      animate={{ width: collapsed ? 64 : 260 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="h-screen bg-zinc-950 text-zinc-100 flex flex-col justify-between sticky top-0 flex-shrink-0 border-r border-zinc-900"
     >
       <div className="flex flex-col flex-grow overflow-y-auto">
         {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-850">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="bg-indigo-600 p-2 rounded-xl text-white flex-shrink-0">
-              <ShieldAlert className="h-5 w-5" />
+        <div className="h-16 flex items-center justify-between px-4.5 border-b border-zinc-900">
+          <div className="flex items-center gap-2.5 overflow-hidden pl-1">
+            <div className="bg-zinc-800 p-2 rounded-lg text-zinc-100 flex-shrink-0 border border-zinc-700/50">
+              <Shield className="h-4 w-4 text-zinc-300" />
             </div>
             {!collapsed && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent"
+                className="font-semibold text-sm tracking-tight text-zinc-200"
               >
-                AssetFlow
+                AssetFlow ERP
               </motion.span>
             )}
           </div>
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-slate-400 hover:text-white hover:bg-slate-800 p-1.5 rounded-lg transition-all hidden md:block"
+            className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 p-1.5 rounded-lg transition-all hidden md:block"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
@@ -71,18 +71,18 @@ export const Sidebar: React.FC = () => {
 
         {/* User Card */}
         {user && (
-          <div className="p-4 border-b border-slate-850">
-            <div className="flex items-center gap-3 bg-slate-850/50 p-3 rounded-2xl border border-slate-800/40">
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-base border border-indigo-500/25 flex-shrink-0">
+          <div className="p-3 border-b border-zinc-900">
+            <div className="flex items-center gap-3 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-900/60">
+              <div className="h-8 w-8 rounded-lg bg-zinc-800 text-zinc-200 flex items-center justify-center font-bold text-xs border border-zinc-700/40 flex-shrink-0">
                 {user.full_name.charAt(0).toUpperCase()}
               </div>
               {!collapsed && (
                 <div className="overflow-hidden">
-                  <h4 className="font-semibold text-sm truncate text-slate-200">
+                  <h4 className="font-medium text-xs truncate text-zinc-300">
                     {user.full_name}
                   </h4>
                   <div className="flex items-center gap-1 mt-0.5">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600/35 border border-indigo-500/20 text-indigo-300 uppercase tracking-wider">
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/40 uppercase tracking-wider">
                       {user.role}
                     </span>
                   </div>
@@ -93,22 +93,22 @@ export const Sidebar: React.FC = () => {
         )}
 
         {/* Navigation Items */}
-        <div className="px-4 py-6 space-y-1.5 flex-grow">
+        <div className="px-2 py-4 space-y-1 flex-grow">
           {filteredNav.map((item) => (
             <NavLink
               key={item.name}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all group relative ${
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all group relative ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10'
-                    : 'text-slate-400 hover:text-slate-250 hover:bg-slate-800/40'
+                    ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/50 shadow-xs'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 border border-transparent'
                 }`
               }
             >
-              <item.icon className="h-5 w-5 flex-shrink-0" />
+              <item.icon className="h-4 w-4 flex-shrink-0 text-zinc-400 group-hover:text-zinc-300" />
               {!collapsed && (
-                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="truncate">
                   {item.name}
                 </motion.span>
               )}
@@ -118,13 +118,13 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Sidebar Footer / Logout */}
-      <div className="p-4 border-t border-slate-850">
+      <div className="p-3 border-t border-zinc-900">
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3.5 px-4 py-3 text-sm font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-rose-400 hover:bg-rose-500/5 rounded-lg border border-transparent hover:border-rose-900/10 transition-all"
         >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span>Logout</span>}
+          <LogOut className="h-4 w-4 flex-shrink-0 text-zinc-500 group-hover:text-rose-400" />
+          {!collapsed && <span>Sign Out</span>}
         </button>
       </div>
     </motion.div>

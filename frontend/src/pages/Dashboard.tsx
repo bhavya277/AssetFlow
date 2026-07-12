@@ -7,7 +7,6 @@ import {
   AlertTriangle,
   Wrench,
   ArrowRight,
-  TrendingUp,
   FolderOpen,
   CalendarDays,
   UserCheck,
@@ -214,40 +213,40 @@ export const Dashboard: React.FC = () => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.05,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { type: 'tween' as const, duration: 0.25 } },
   };
 
   const cards = [
     {
       title: 'Total Assets Owned',
       value: stats.totalAssets,
-      change: isManager ? 'Currently allocated resources' : 'Resources assigned to you',
+      change: isManager ? 'Active corporate resources' : 'Resources assigned to you',
       icon: FolderOpen,
-      color: 'indigo',
+      color: 'slate',
     },
     {
       title: 'Global Asset Utilization',
       value: `${stats.utilizationRate}%`,
-      change: 'Currently allocated assets',
+      change: 'Allocated vs total capacity',
       icon: UserCheck,
       color: 'emerald',
     },
     {
-      title: 'Pending Transfer Approvals',
+      title: 'Pending Transfers',
       value: stats.pendingTransfers,
-      change: stats.pendingTransfers > 0 ? 'Requires review' : 'No pending requests',
+      change: stats.pendingTransfers > 0 ? 'Requires attention' : 'No requests pending',
       icon: AlertTriangle,
       color: 'amber',
     },
     {
-      title: 'Active Maintenance Tasks',
+      title: 'Active Maintenance',
       value: stats.maintenanceToday,
       change: 'In progress or requested',
       icon: Wrench,
@@ -256,21 +255,21 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-8 max-w-7xl mx-auto space-y-6">
       {/* Header section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-zinc-100">
-            Executive Dashboard
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            System Overview
           </h1>
-          <p className="text-slate-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 mt-1">
             Real-time status overview of company physical resources and deployment statistics.
           </p>
         </div>
         <div className="flex gap-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            Live Status: Connected
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-250 dark:border-emerald-900/35 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Connected
           </span>
         </div>
       </div>
@@ -280,40 +279,38 @@ export const Dashboard: React.FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {cards.map((card, idx) => (
           <motion.div
             key={idx}
             variants={itemVariants}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group hover:shadow-md transition-all duration-300"
+            className="premium-card premium-card-hover p-5 relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                   {card.title}
                 </p>
-                <h3 className="text-3xl font-bold text-slate-800 dark:text-zinc-100 mt-2">
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1.5">
                   {loading ? '—' : card.value}
                 </h3>
               </div>
               <div
-                className={`p-3 rounded-2xl ${
-                  card.color === 'indigo'
-                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
-                    : card.color === 'emerald'
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
+                className={`p-2 rounded-lg border ${
+                  card.color === 'emerald'
+                    ? 'bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200/40 dark:border-emerald-900/20'
                     : card.color === 'amber'
-                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
-                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400'
+                    ? 'bg-amber-50/50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200/40 dark:border-amber-900/20'
+                    : card.color === 'rose'
+                    ? 'bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200/40 dark:border-rose-900/20'
+                    : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200/60 dark:border-zinc-800/40'
                 }`}
               >
-                <card.icon className="h-5 w-5" />
+                <card.icon className="h-4.5 w-4.5" />
               </div>
             </div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 mt-4 flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5 text-indigo-500" />
+            <p className="text-[11px] text-zinc-500 mt-3.5">
               {card.change}
             </p>
           </motion.div>
@@ -321,44 +318,42 @@ export const Dashboard: React.FC = () => {
       </motion.div>
 
       {/* Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Utilization Bar Chart */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm">
+        <div className="premium-card p-5">
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-zinc-100">Asset Utilization</h3>
-            <p className="text-xs text-slate-500">Allocated vs. total owned assets categorized by type</p>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Asset Deployment rate</h3>
+            <p className="text-[11px] text-zinc-500 mt-0.5">Allocated vs. total owned assets categorized by type</p>
           </div>
-          <div className="h-80 w-full">
+          <div className="h-72 w-full">
             {loading ? (
-              <div className="h-full flex items-center justify-center text-sm text-slate-400">Loading chart data...</div>
+              <div className="h-full flex items-center justify-center text-xs text-zinc-400">Loading metrics...</div>
             ) : utilizationData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-sm text-slate-400">No category data available</div>
+              <div className="h-full flex items-center justify-center text-xs text-zinc-400">No category data available</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={utilizationData} margin={{ top: 20, right: 30, left: -20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <BarChart data={utilizationData} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" vertical={false} />
                   <XAxis
                     dataKey="category_name"
-                    fontSize={10}
-                    stroke="#94a3b8"
+                    fontSize={9}
+                    stroke="#a1a1aa"
                     tickLine={false}
                     interval={0}
-                    angle={-20}
-                    textAnchor="end"
-                    height={60}
+                    height={40}
                   />
-                  <YAxis fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} />
+                  <YAxis fontSize={9} stroke="#a1a1aa" tickLine={false} axisLine={false} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '12px',
-                      fontFamily: 'Inter, sans-serif',
-                      fontSize: '12px',
+                      border: '1px solid #e4e4e7',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      fontSize: '11px',
                     }}
                   />
-                  <Bar dataKey="allocated" fill="#4f46e5" radius={[6, 6, 0, 0]} name="Allocated" />
-                  <Bar dataKey="total" fill="#e2e8f0" radius={[6, 6, 0, 0]} name="Total Capacity" />
+                  <Bar dataKey="allocated" fill="#18181b" radius={[4, 4, 0, 0]} name="Allocated" />
+                  <Bar dataKey="total" fill="#e4e4e7" radius={[4, 4, 0, 0]} name="Total Capacity" />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -366,37 +361,37 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Maintenance cost trend */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm">
+        <div className="premium-card p-5">
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-zinc-100">Maintenance Expenses</h3>
-            <p className="text-xs text-slate-500">Monthly breakdown of overall repair and servicing expenditures</p>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Maintenance Expenses</h3>
+            <p className="text-[11px] text-zinc-500 mt-0.5">Monthly breakdown of overall repair and servicing expenditures</p>
           </div>
-          <div className="h-80 w-full">
+          <div className="h-72 w-full">
             {loading ? (
-              <div className="h-full flex items-center justify-center text-sm text-slate-400">Loading chart data...</div>
+              <div className="h-full flex items-center justify-center text-xs text-zinc-400">Loading metrics...</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={maintenanceTrendData} margin={{ top: 20, right: 30, left: -20, bottom: 5 }}>
+                <AreaChart data={maintenanceTrendData} margin={{ top: 10, right: 10, left: -25, bottom: 5 }}>
                   <defs>
                     <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#71717a" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#71717a" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="month" fontSize={11} stroke="#94a3b8" tickLine={false} />
-                  <YAxis fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" vertical={false} />
+                  <XAxis dataKey="month" fontSize={9} stroke="#a1a1aa" tickLine={false} />
+                  <YAxis fontSize={9} stroke="#a1a1aa" tickLine={false} axisLine={false} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '12px',
-                      fontFamily: 'Inter, sans-serif',
-                      fontSize: '12px',
+                      border: '1px solid #e4e4e7',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      fontSize: '11px',
                     }}
-                    formatter={(value: number) => [`$${value.toFixed(2)}`, 'Expense']}
+                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Expense']}
                   />
-                  <Area type="monotone" dataKey="cost" stroke="#4f46e5" strokeWidth={2} fillOpacity={1} fill="url(#colorCost)" name="Expense ($)" />
+                  <Area type="monotone" dataKey="cost" stroke="#18181b" strokeWidth={1.5} fillOpacity={1} fill="url(#colorCost)" name="Expense ($)" />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -405,33 +400,33 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Footer Info Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm lg:col-span-2">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-zinc-100 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="premium-card p-5 lg:col-span-2">
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">
             {isManager ? 'Quick Workflows' : 'Quick Actions'}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {isManager && (
               <>
                 <a
                   href="/assets"
-                  className="flex flex-col justify-between p-5 rounded-2xl bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/30 border border-indigo-100/50 dark:border-indigo-900/30 transition-all hover:scale-[1.01]"
+                  className="flex flex-col justify-between p-4.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50 dark:bg-zinc-900/10 dark:hover:bg-zinc-900/30 transition-all hover:scale-[1.005]"
                 >
-                  <FolderOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mb-6" />
+                  <FolderOpen className="h-5 w-5 text-zinc-700 dark:text-zinc-400 mb-5" />
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Register Asset</h4>
-                    <p className="text-xs text-slate-500 mt-1">Add new corporate physical hardware</p>
+                    <h4 className="font-semibold text-zinc-900 dark:text-zinc-200 text-xs">Register Asset</h4>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Register new corporate equipment</p>
                   </div>
                 </a>
 
                 <a
                   href="/allocations"
-                  className="flex flex-col justify-between p-5 rounded-2xl bg-emerald-50/50 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30 border border-emerald-100/50 dark:border-emerald-900/30 transition-all hover:scale-[1.01]"
+                  className="flex flex-col justify-between p-4.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50 dark:bg-zinc-900/10 dark:hover:bg-zinc-900/30 transition-all hover:scale-[1.005]"
                 >
-                  <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400 mb-6" />
+                  <UserCheck className="h-5 w-5 text-zinc-700 dark:text-zinc-400 mb-5" />
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Allocate Asset</h4>
-                    <p className="text-xs text-slate-500 mt-1">Assign hardware to verified team member</p>
+                    <h4 className="font-semibold text-zinc-900 dark:text-zinc-200 text-xs">Allocate Asset</h4>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Assign devices to employees</p>
                   </div>
                 </a>
               </>
@@ -439,12 +434,12 @@ export const Dashboard: React.FC = () => {
 
             <a
               href="/bookings"
-              className="flex flex-col justify-between p-5 rounded-2xl bg-amber-50/50 hover:bg-amber-50 dark:bg-amber-950/20 dark:hover:bg-amber-950/30 border border-amber-100/50 dark:border-amber-900/30 transition-all hover:scale-[1.01]"
+              className="flex flex-col justify-between p-4.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50 dark:bg-zinc-900/10 dark:hover:bg-zinc-900/30 transition-all hover:scale-[1.005]"
             >
-              <CalendarDays className="h-6 w-6 text-amber-600 dark:text-amber-400 mb-6" />
+              <CalendarDays className="h-5 w-5 text-zinc-700 dark:text-zinc-400 mb-5" />
               <div>
-                <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Reserve Resource</h4>
-                <p className="text-xs text-slate-500 mt-1">Book projectors, rooms or fleet vehicles</p>
+                <h4 className="font-semibold text-zinc-900 dark:text-zinc-200 text-xs">Reserve Resource</h4>
+                <p className="text-[10px] text-zinc-500 mt-0.5">Reserve projectors, rooms, or vehicles</p>
               </div>
             </a>
 
@@ -452,23 +447,23 @@ export const Dashboard: React.FC = () => {
               <>
                 <a
                   href="/maintenance"
-                  className="flex flex-col justify-between p-5 rounded-2xl bg-rose-50/50 hover:bg-rose-50 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 border border-rose-100/50 dark:border-rose-900/30 transition-all hover:scale-[1.01]"
+                  className="flex flex-col justify-between p-4.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50 dark:bg-zinc-900/10 dark:hover:bg-zinc-900/30 transition-all hover:scale-[1.005]"
                 >
-                  <Wrench className="h-6 w-6 text-rose-600 dark:text-rose-400 mb-6" />
+                  <Wrench className="h-5 w-5 text-zinc-700 dark:text-zinc-400 mb-5" />
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Report Issue</h4>
-                    <p className="text-xs text-slate-500 mt-1">Request maintenance for assigned assets</p>
+                    <h4 className="font-semibold text-zinc-900 dark:text-zinc-200 text-xs">Report Issue</h4>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Report asset maintenance needs</p>
                   </div>
                 </a>
 
                 <a
                   href="/assets"
-                  className="flex flex-col justify-between p-5 rounded-2xl bg-indigo-50/50 hover:bg-indigo-50 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/30 border border-indigo-100/50 dark:border-indigo-900/30 transition-all hover:scale-[1.01]"
+                  className="flex flex-col justify-between p-4.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 hover:bg-zinc-50 dark:bg-zinc-900/10 dark:hover:bg-zinc-900/30 transition-all hover:scale-[1.005]"
                 >
-                  <FolderOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mb-6" />
+                  <FolderOpen className="h-5 w-5 text-zinc-700 dark:text-zinc-400 mb-5" />
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 text-sm">Browse Assets</h4>
-                    <p className="text-xs text-slate-500 mt-1">View company asset directory and passports</p>
+                    <h4 className="font-semibold text-zinc-900 dark:text-zinc-200 text-xs">Browse Catalog</h4>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Browse corporate device directory</p>
                   </div>
                 </a>
               </>
@@ -477,28 +472,28 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* System Activity */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+        <div className="premium-card p-5 flex flex-col justify-between">
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-zinc-100 mb-4">
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4">
               {isManager ? 'Recent Activity' : 'Latest Logs'}
             </h3>
             {loading ? (
               <div className="space-y-4 animate-pulse">
-                <div className="h-10 bg-slate-100 dark:bg-zinc-800 rounded-xl" />
-                <div className="h-10 bg-slate-100 dark:bg-zinc-800 rounded-xl" />
+                <div className="h-10 bg-zinc-100 dark:bg-zinc-800 rounded-lg" />
+                <div className="h-10 bg-zinc-100 dark:bg-zinc-800 rounded-lg" />
               </div>
             ) : isManager ? (
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 {activities.length === 0 ? (
-                  <p className="text-sm text-slate-400">No activity recorded yet.</p>
+                  <p className="text-xs text-zinc-500">No activity recorded yet.</p>
                 ) : (
                   activities.map((activity) => (
-                    <div key={activity.id} className="flex gap-3 text-sm">
-                      <div className="h-2 w-2 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
+                    <div key={activity.id} className="flex gap-3 text-xs">
+                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100 mt-1.5 flex-shrink-0" />
                       <div>
-                        <p className="text-slate-700 dark:text-zinc-300 font-medium">{activity.action}</p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{activity.details}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase mt-1">
+                        <p className="text-zinc-800 dark:text-zinc-200 font-semibold">{activity.action}</p>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">{activity.details}</p>
+                        <p className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase mt-0.5">
                           {activity.user?.full_name || 'System'} • {formatLogDate(activity.created_at)}
                         </p>
                       </div>
@@ -507,15 +502,15 @@ export const Dashboard: React.FC = () => {
                 )}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">
-                Activity logs are available to managers and administrators.
+              <p className="text-xs text-zinc-500">
+                Activity logs are available to administrators.
               </p>
             )}
           </div>
           {isManager && (
             <a
               href="/logs"
-              className="flex items-center justify-between text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-850"
+              className="flex items-center justify-between text-xs font-semibold text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300 mt-5 pt-3.5 border-t border-zinc-100 dark:border-zinc-900"
             >
               View all logs
               <ArrowRight className="h-3.5 w-3.5" />

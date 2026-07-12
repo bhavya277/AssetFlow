@@ -200,17 +200,17 @@ export const Allocations: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-zinc-100">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Allocation & Transfer
           </h1>
-          <p className="text-slate-500 dark:text-zinc-400 mt-1">
-            Assign company physical items to users, view active custodian mappings, and approve hardware transition workflows.
+          <p className="text-xs text-zinc-500 mt-1">
+            Assign company physical items to users, view active custodian mappings, and approve hardware transitions.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <button
             onClick={() => setShowTransferModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-850 text-slate-650 dark:text-zinc-300 rounded-xl text-sm font-semibold shadow-xs transition-all active:scale-95"
+            className="premium-button-secondary flex items-center gap-1.5 text-xs font-semibold"
           >
             <ArrowRightLeft className="h-4 w-4" />
             Request Transfer
@@ -218,7 +218,7 @@ export const Allocations: React.FC = () => {
           {isManager && (
             <button
               onClick={() => setShowAllocateModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all hover:scale-[1.01] active:scale-95"
+              className="premium-button-primary flex items-center gap-1.5 text-xs font-semibold"
             >
               <Plus className="h-4 w-4" />
               New Allocation
@@ -228,24 +228,24 @@ export const Allocations: React.FC = () => {
       </div>
 
       {/* Tabs and Search */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-2">
-        <div className="flex gap-2 bg-slate-100 dark:bg-zinc-900 p-1 rounded-2xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <div className="flex gap-1.5 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-lg">
           <button
             onClick={() => { setActiveTab('allocations'); setSearchQuery(''); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
               activeTab === 'allocations'
-                ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-550 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
             Active Allocations
           </button>
           <button
             onClick={() => { setActiveTab('transfers'); setSearchQuery(''); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
               activeTab === 'transfers'
-                ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-550 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
             Transfer Workflows
@@ -253,45 +253,45 @@ export const Allocations: React.FC = () => {
         </div>
 
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400 dark:text-zinc-500" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
           <input
             type="text"
             placeholder={`Search ${activeTab === 'allocations' ? 'allocations' : 'transfers'}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100 shadow-sm transition-all"
+            className="w-full pl-9 premium-input text-xs"
           />
         </div>
       </div>
 
       {/* Main Table area */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm rounded-3xl overflow-hidden">
+      <div className="premium-card overflow-hidden">
         {loading ? (
           <div className="p-8 space-y-4">
-            <div className="h-10 bg-slate-50 dark:bg-zinc-850 rounded-2xl animate-pulse" />
-            <div className="h-14 bg-slate-100 dark:bg-zinc-850 rounded-2xl animate-pulse" />
-            <div className="h-14 bg-slate-50 dark:bg-zinc-850 rounded-2xl animate-pulse" />
+            <div className="h-10 bg-zinc-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
+            <div className="h-14 bg-zinc-100 dark:bg-zinc-900 rounded-lg animate-pulse" />
+            <div className="h-14 bg-zinc-50 dark:bg-zinc-900 rounded-lg animate-pulse" />
           </div>
         ) : (
           <div className="overflow-x-auto">
             {activeTab === 'allocations' ? (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-zinc-850 text-slate-550 dark:text-zinc-400 text-xs font-semibold uppercase border-b border-zinc-100 dark:border-zinc-800">
-                    <th className="px-6 py-4">Asset Detail</th>
-                    <th className="px-6 py-4">Serial Number</th>
-                    <th className="px-6 py-4">Custodian (User)</th>
-                    <th className="px-6 py-4">Allocated Date</th>
-                    {isManager && <th className="px-6 py-4 text-right">Actions</th>}
+                  <tr className="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[10px] font-bold uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800">
+                    <th className="px-6 py-3 font-semibold">Asset Detail</th>
+                    <th className="px-6 py-3 font-semibold">Serial Number</th>
+                    <th className="px-6 py-3 font-semibold">Custodian (User)</th>
+                    <th className="px-6 py-3 font-semibold">Allocated Date</th>
+                    {isManager && <th className="px-6 py-3 text-right font-semibold">Actions</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-sm text-slate-700 dark:text-zinc-300">
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs text-zinc-700 dark:text-zinc-300">
                   {filteredAllocations.map(a => (
-                    <tr key={a.id} className="hover:bg-slate-50/55 dark:hover:bg-zinc-850/30 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800 dark:text-zinc-100">{a.asset?.name || 'Unknown Asset'}</td>
-                      <td className="px-6 py-4 font-mono text-slate-500 text-xs">{a.asset?.serial_number}</td>
-                      <td className="px-6 py-4 font-semibold text-slate-800 dark:text-zinc-250">{a.allocated_to?.full_name}</td>
-                      <td className="px-6 py-4 text-slate-500">
+                    <tr key={a.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                      <td className="px-6 py-3 font-bold text-zinc-900 dark:text-zinc-100">{a.asset?.name || 'Unknown Asset'}</td>
+                      <td className="px-6 py-3 font-mono text-zinc-500">{a.asset?.serial_number}</td>
+                      <td className="px-6 py-3 font-semibold text-zinc-900 dark:text-zinc-200">{a.allocated_to?.full_name}</td>
+                      <td className="px-6 py-3 text-zinc-500">
                         {new Date(a.allocated_at).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',
@@ -299,13 +299,13 @@ export const Allocations: React.FC = () => {
                         })}
                       </td>
                       {isManager && (
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-3 text-right">
                           <button
                             onClick={() => handleReturn(a.id)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-650 dark:text-zinc-400 rounded-xl text-xs font-semibold transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 rounded-md text-[11px] font-semibold transition-colors"
                           >
-                            <CornerDownLeft className="h-3.5 w-3.5 text-indigo-500" />
-                            Return Store
+                            <CornerDownLeft className="h-3 w-3 text-zinc-500" />
+                            Return
                           </button>
                         </td>
                       )}
@@ -313,7 +313,7 @@ export const Allocations: React.FC = () => {
                   ))}
                   {filteredAllocations.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="text-center py-12 text-slate-400">
+                      <td colSpan={5} className="text-center py-12 text-zinc-400">
                         No active allocations found matching your search.
                       </td>
                     </tr>
@@ -324,60 +324,60 @@ export const Allocations: React.FC = () => {
               /* Transfers Table */
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-zinc-850 text-slate-550 dark:text-zinc-400 text-xs font-semibold uppercase border-b border-zinc-100 dark:border-zinc-800">
-                    <th className="px-6 py-4">Asset Detail</th>
-                    <th className="px-6 py-4">Requested By</th>
-                    <th className="px-6 py-4">Target Employee</th>
-                    <th className="px-6 py-4">Requested Date</th>
-                    <th className="px-6 py-4">Status</th>
-                    {isApprover && <th className="px-6 py-4 text-right">Approval Actions</th>}
+                  <tr className="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[10px] font-bold uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800">
+                    <th className="px-6 py-3 font-semibold">Asset Detail</th>
+                    <th className="px-6 py-3 font-semibold">Requested By</th>
+                    <th className="px-6 py-3 font-semibold">Target Employee</th>
+                    <th className="px-6 py-3 font-semibold">Requested Date</th>
+                    <th className="px-6 py-3 font-semibold">Status</th>
+                    {isApprover && <th className="px-6 py-3 text-right font-semibold">Approval Actions</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-sm text-slate-700 dark:text-zinc-300">
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs text-zinc-700 dark:text-zinc-300">
                   {filteredTransfers.map(t => (
-                    <tr key={t.id} className="hover:bg-slate-50/55 dark:hover:bg-zinc-850/30 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800 dark:text-zinc-100">{t.asset?.name || 'Unknown Asset'}</td>
-                      <td className="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-300">{t.requested_by?.full_name}</td>
-                      <td className="px-6 py-4 font-bold text-slate-850 dark:text-zinc-200">{t.target_employee?.full_name}</td>
-                      <td className="px-6 py-4 text-slate-500">
+                    <tr key={t.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                      <td className="px-6 py-3 font-bold text-zinc-900 dark:text-zinc-100">{t.asset?.name || 'Unknown Asset'}</td>
+                      <td className="px-6 py-3 font-semibold text-zinc-500">{t.requested_by?.full_name}</td>
+                      <td className="px-6 py-3 font-bold text-zinc-800 dark:text-zinc-200">{t.target_employee?.full_name}</td>
+                      <td className="px-6 py-3 text-zinc-500">
                         {new Date(t.requested_at).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
                         })}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-block px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
+                      <td className="px-6 py-3">
+                        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
                           t.status === 'Pending'
-                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200/40 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30'
                             : t.status === 'Approved'
-                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30'
-                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/40 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30'
+                            : 'bg-rose-50 text-rose-700 border-rose-200/40 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30'
                         }`}>
                           {t.status}
                         </span>
                       </td>
                       {isApprover && (
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-3 text-right">
                           {t.status === 'Pending' ? (
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-1.5">
                               <button
                                 onClick={() => handleProcessTransfer(t.id, 'Approved')}
-                                className="p-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg transition-colors"
+                                className="p-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded transition-colors"
                                 title="Approve Transfer"
                               >
-                                <Check className="h-4 w-4" />
+                                <Check className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 onClick={() => handleProcessTransfer(t.id, 'Rejected')}
-                                className="p-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/80 border border-rose-200 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded-lg transition-colors"
+                                className="p-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/80 border border-rose-200 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded transition-colors"
                                 title="Reject Transfer"
                               >
-                                <X className="h-4 w-4" />
+                                <X className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-400">Processed</span>
+                            <span className="text-[10px] text-zinc-400">Processed</span>
                           )}
                         </td>
                       )}
@@ -385,7 +385,7 @@ export const Allocations: React.FC = () => {
                   ))}
                   {filteredTransfers.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="text-center py-12 text-slate-400">
+                      <td colSpan={6} className="text-center py-12 text-zinc-400">
                         No transfer requests logged yet.
                       </td>
                     </tr>
@@ -406,29 +406,32 @@ export const Allocations: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowAllocateModal(false)}
-              className="fixed inset-0 bg-slate-950/30 backdrop-blur-xs"
+              className="fixed inset-0 bg-slate-950/20 dark:bg-black/40 backdrop-blur-xs"
             />
             <motion.div
-              initial={{ opacity: 0, x: 200 }}
+              initial={{ opacity: 0, x: 80 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 200 }}
-              className="bg-white dark:bg-zinc-900 w-full max-w-md h-full shadow-2xl relative z-50 flex flex-col justify-between p-8 border-l border-zinc-200 dark:border-zinc-800 rounded-l-3xl"
+              exit={{ opacity: 0, x: 80 }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="bg-white dark:bg-zinc-900 w-full max-w-md h-full shadow-xl relative z-50 flex flex-col justify-between p-6 border-l border-zinc-200 dark:border-zinc-800 rounded-l-2xl"
             >
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Allocate Company Asset</h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Assign available stock items to verified personnel files.
-                </p>
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Allocate Asset</h2>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">
+                    Assign available stock items to verified personnel files.
+                  </p>
+                </div>
 
-                <form id="allocate-form" onSubmit={handleAllocate} className="mt-8 space-y-5">
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
+                <form id="allocate-form" onSubmit={handleAllocate} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
                       Available Stock Assets
                     </label>
                     <select
                       value={allocForm.asset_id}
                       onChange={(e) => setAllocForm({ ...allocForm, asset_id: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100"
+                      className="w-full premium-input"
                       required
                     >
                       <option value="" disabled>Select Asset</option>
@@ -439,19 +442,19 @@ export const Allocations: React.FC = () => {
                     {availableAssets.length === 0 && (
                       <p className="text-[10px] text-rose-500 mt-1.5 flex items-center gap-1">
                         <Info className="h-3 w-3" />
-                        No assets in storage are currently "Available".
+                        No assets are currently "Available".
                       </p>
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
                       Recipient Employee
                     </label>
                     <select
                       value={allocForm.allocated_to_id}
                       onChange={(e) => setAllocForm({ ...allocForm, allocated_to_id: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100"
+                      className="w-full premium-input"
                       required
                     >
                       <option value="" disabled>Select Recipient</option>
@@ -464,11 +467,11 @@ export const Allocations: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 border-t border-zinc-100 dark:border-zinc-800 pt-6">
+              <div className="flex gap-3 border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowAllocateModal(false)}
-                  className="flex-1 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-850 text-slate-650 dark:text-zinc-400 rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 premium-button-secondary"
                 >
                   Cancel
                 </button>
@@ -476,11 +479,11 @@ export const Allocations: React.FC = () => {
                   type="submit"
                   form="allocate-form"
                   disabled={submitLoading || availableAssets.length === 0}
-                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/10 active:scale-95 disabled:opacity-50 disabled:scale-100"
+                  className="flex-1 premium-button-primary"
                 >
                   {submitLoading ? (
                     <>
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       Allocating...
                     </>
                   ) : (
@@ -502,29 +505,32 @@ export const Allocations: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowTransferModal(false)}
-              className="fixed inset-0 bg-slate-950/30 backdrop-blur-xs"
+              className="fixed inset-0 bg-slate-950/20 dark:bg-black/40 backdrop-blur-xs"
             />
             <motion.div
-              initial={{ opacity: 0, x: 200 }}
+              initial={{ opacity: 0, x: 80 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 200 }}
-              className="bg-white dark:bg-zinc-900 w-full max-w-md h-full shadow-2xl relative z-50 flex flex-col justify-between p-8 border-l border-zinc-200 dark:border-zinc-800 rounded-l-3xl"
+              exit={{ opacity: 0, x: 80 }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="bg-white dark:bg-zinc-900 w-full max-w-md h-full shadow-xl relative z-50 flex flex-col justify-between p-6 border-l border-zinc-200 dark:border-zinc-800 rounded-l-2xl"
             >
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Request Asset Transfer</h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Submit requests to reassign an already allocated item to another user.
-                </p>
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Request Asset Transfer</h2>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">
+                    Submit requests to reassign an already allocated item to another user.
+                  </p>
+                </div>
 
-                <form id="transfer-form" onSubmit={handleRequestTransfer} className="mt-8 space-y-5">
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
+                <form id="transfer-form" onSubmit={handleRequestTransfer} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
                       Allocated Assets
                     </label>
                     <select
                       value={transferForm.asset_id}
                       onChange={(e) => setTransferForm({ ...transferForm, asset_id: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100"
+                      className="w-full premium-input"
                       required
                     >
                       <option value="" disabled>Select Asset</option>
@@ -533,21 +539,21 @@ export const Allocations: React.FC = () => {
                       ))}
                     </select>
                     {allocatedAssets.length === 0 && (
-                      <p className="text-[10px] text-slate-455 mt-1.5 flex items-center gap-1">
-                        <HelpCircle className="h-3.5 w-3.5 text-indigo-500" />
-                        No assets are currently "Allocated" in the organization.
+                      <p className="text-[10px] text-zinc-500 mt-1.5 flex items-center gap-1">
+                        <HelpCircle className="h-3.5 w-3.5 text-zinc-400" />
+                        No assets are currently "Allocated".
                       </p>
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
                       Recipient Employee (Target)
                     </label>
                     <select
                       value={transferForm.target_employee_id}
                       onChange={(e) => setTransferForm({ ...transferForm, target_employee_id: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100"
+                      className="w-full premium-input"
                       required
                     >
                       <option value="" disabled>Select Recipient</option>
@@ -560,11 +566,11 @@ export const Allocations: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 border-t border-zinc-100 dark:border-zinc-800 pt-6">
+              <div className="flex gap-3 border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowTransferModal(false)}
-                  className="flex-1 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-850 text-slate-650 dark:text-zinc-400 rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 premium-button-secondary"
                 >
                   Cancel
                 </button>
@@ -572,11 +578,11 @@ export const Allocations: React.FC = () => {
                   type="submit"
                   form="transfer-form"
                   disabled={submitLoading || allocatedAssets.length === 0}
-                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/10 active:scale-95 disabled:opacity-50 disabled:scale-100"
+                  className="flex-1 premium-button-primary"
                 >
                   {submitLoading ? (
                     <>
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       Requesting...
                     </>
                   ) : (

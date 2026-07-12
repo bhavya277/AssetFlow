@@ -90,7 +90,6 @@ export const Bookings: React.FC = () => {
 
     setSubmitLoading(true);
     try {
-      // API call to POST /bookings/
       await axios.post('/bookings/', {
         asset_id: parseInt(form.asset_id, 10),
         start_time: start.toISOString(),
@@ -162,13 +161,13 @@ export const Bookings: React.FC = () => {
   const getStatusStyles = (status: string) => {
     switch (status) {
       case 'Confirmed':
-        return 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-100/30';
+        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-100/30';
       case 'Pending':
-        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-100/30';
+        return 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-100/30';
       case 'Rejected':
-        return 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-100/30';
+        return 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-100/30';
       default:
-        return 'bg-slate-100 dark:bg-zinc-800 text-slate-550';
+        return 'bg-zinc-100 text-zinc-500 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700/60';
     }
   };
 
@@ -177,16 +176,16 @@ export const Bookings: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-zinc-100">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Resource Booking
           </h1>
-          <p className="text-slate-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 mt-1">
             Reserve shared organizational resources (fleet cars, devices, projector bays) and track reservation schedules.
           </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all hover:scale-[1.01] active:scale-95"
+          className="premium-button-primary flex items-center gap-1.5 text-xs font-semibold"
         >
           <Plus className="h-4 w-4" />
           Book Resource
@@ -194,77 +193,77 @@ export const Bookings: React.FC = () => {
       </div>
 
       {/* Search Filter */}
-      <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-4">
+      <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400 dark:text-zinc-500" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
           <input
             type="text"
             placeholder="Search by asset, user, purpose..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100 shadow-sm transition-all"
+            className="w-full pl-9 premium-input text-xs"
           />
         </div>
       </div>
 
       {/* Grid of Reservation cards */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="h-44 bg-slate-100 dark:bg-zinc-900 rounded-3xl animate-pulse" />
-          <div className="h-44 bg-slate-50 dark:bg-zinc-900 rounded-3xl animate-pulse" />
-          <div className="h-44 bg-slate-100 dark:bg-zinc-900 rounded-3xl animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="h-40 bg-zinc-100 dark:bg-zinc-900 rounded-xl animate-pulse" />
+          <div className="h-40 bg-zinc-50 dark:bg-zinc-900 rounded-xl animate-pulse" />
+          <div className="h-40 bg-zinc-100 dark:bg-zinc-900 rounded-xl animate-pulse" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredBookings.map(b => (
             <motion.div
               key={b.id}
-              className={`bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm flex flex-col justify-between min-h-48 relative overflow-hidden group ${
+              className={`premium-card p-5 flex flex-col justify-between min-h-44 relative overflow-hidden group ${
                 b.status === 'Cancelled' || b.status === 'Rejected' ? 'opacity-65' : ''
               }`}
             >
               <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusStyles(b.status)}`}>
+                <div className="space-y-1.5">
+                  <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${getStatusStyles(b.status)}`}>
                     {b.status}
                   </span>
-                  <h3 className="font-bold text-slate-800 dark:text-zinc-150 text-sm line-clamp-1">{b.asset?.name || 'Unknown Resource'}</h3>
-                  <p className="text-[10px] text-slate-400">Purpose: {b.purpose}</p>
+                  <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm line-clamp-1">{b.asset?.name || 'Unknown Resource'}</h3>
+                  <p className="text-[10px] text-zinc-400 leading-relaxed">Purpose: {b.purpose}</p>
                   {b.booked_by && (
-                    <p className="text-[10px] text-slate-400">Requested by: {b.booked_by.full_name}</p>
+                    <p className="text-[9px] text-zinc-400">By: {b.booked_by.full_name}</p>
                   )}
                 </div>
-                <CalendarDays className="h-6 w-6 text-slate-350 dark:text-zinc-700" />
+                <CalendarDays className="h-5 w-5 text-zinc-400" />
               </div>
 
-              <div className="border-t border-zinc-100 dark:border-zinc-850 pt-3 mt-3 flex items-center justify-between text-xs">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-zinc-400">
-                    <Clock className="h-3.5 w-3.5 text-indigo-500" />
+              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 mt-3 flex items-center justify-between text-[11px]">
+                <div className="space-y-1 text-zinc-500">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-zinc-400" />
                     <span>{formatDateTime(b.start_time)}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-zinc-400">
-                    <CalendarRange className="h-3.5 w-3.5 text-indigo-500" />
+                  <div className="flex items-center gap-1.5">
+                    <CalendarRange className="h-3.5 w-3.5 text-zinc-400" />
                     <span>To {formatDateTime(b.end_time)}</span>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   {b.status === 'Pending' && isApprover && (
                     <>
                       <button
                         onClick={() => handleProcessBooking(b.id, 'Confirmed')}
-                        className="p-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg transition-colors"
+                        className="p-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/85 border border-emerald-250 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded transition-colors"
                         title="Approve Booking"
                       >
-                        <Check className="h-4 w-4" />
+                        <Check className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => handleProcessBooking(b.id, 'Rejected')}
-                        className="p-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/80 border border-rose-200 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded-lg transition-colors"
+                        className="p-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/85 border border-rose-250 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded transition-colors"
                         title="Reject Booking"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-3.5 w-3.5" />
                       </button>
                     </>
                   )}
@@ -273,7 +272,7 @@ export const Bookings: React.FC = () => {
                     (b.booked_by_id === user?.id || isApprover) && (
                     <button
                       onClick={() => handleCancelBooking(b.id)}
-                      className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg border border-transparent hover:border-rose-100 transition-colors"
+                      className="p-1 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded border border-transparent hover:border-rose-100 transition-colors"
                       title="Cancel Reservation"
                     >
                       <XCircle className="h-4.5 w-4.5" />
@@ -284,7 +283,7 @@ export const Bookings: React.FC = () => {
             </motion.div>
           ))}
           {filteredBookings.length === 0 && (
-            <div className="col-span-full py-16 text-center text-slate-400">
+            <div className="col-span-full py-16 text-center text-zinc-400 text-xs">
               No resource reservations scheduled yet.
             </div>
           )}
@@ -300,29 +299,32 @@ export const Bookings: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowModal(false)}
-              className="fixed inset-0 bg-slate-950/30 backdrop-blur-xs"
+              className="fixed inset-0 bg-slate-950/20 dark:bg-black/40 backdrop-blur-xs"
             />
             <motion.div
-              initial={{ opacity: 0, x: 200 }}
+              initial={{ opacity: 0, x: 80 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 200 }}
-              className="bg-white dark:bg-zinc-900 w-full max-w-md h-full shadow-2xl relative z-50 flex flex-col justify-between p-8 border-l border-zinc-200 dark:border-zinc-800 rounded-l-3xl overflow-y-auto"
+              exit={{ opacity: 0, x: 80 }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="bg-white dark:bg-zinc-900 w-full max-w-md h-full shadow-xl relative z-50 flex flex-col justify-between p-6 border-l border-zinc-200 dark:border-zinc-800 rounded-l-2xl overflow-y-auto"
             >
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Reserve Shared Resource</h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Schedule time slots for shared conference devices, servers, or vehicles.
-                </p>
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Reserve Shared Resource</h2>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">
+                    Schedule time slots for shared conference devices, servers, or vehicles.
+                  </p>
+                </div>
 
-                <form id="booking-form" onSubmit={handleSubmit} className="mt-8 space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
+                <form id="booking-form" onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
                       Choose Resource (Asset)
                     </label>
                     <select
                       value={form.asset_id}
                       onChange={(e) => setForm({ ...form, asset_id: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100"
+                      className="w-full premium-input"
                       required
                     >
                       <option value="" disabled>Select Resource</option>
@@ -332,41 +334,41 @@ export const Bookings: React.FC = () => {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
-                      Reservation Start Date/Time
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
+                      Reservation Start
                     </label>
                     <input
                       type="datetime-local"
                       value={form.start_time}
                       onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-500 dark:text-zinc-100"
+                      className="w-full premium-input"
                       required
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
-                      Reservation End Date/Time
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
+                      Reservation End
                     </label>
                     <input
                       type="datetime-local"
                       value={form.end_time}
                       onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-505 dark:text-zinc-100"
+                      className="w-full premium-input"
                       required
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase text-zinc-500">
                       Purpose / Reservation Notes
                     </label>
                     <textarea
                       placeholder="e.g. Client presentation in conference bay B..."
                       value={form.purpose}
                       onChange={(e) => setForm({ ...form, purpose: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-zinc-205 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100 h-24 resize-none"
+                      className="w-full premium-input h-24 resize-none"
                       required
                     />
                   </div>
@@ -374,11 +376,11 @@ export const Bookings: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 border-t border-zinc-100 dark:border-zinc-800 pt-6 mt-6">
+              <div className="flex gap-3 border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-850 text-slate-650 dark:text-zinc-400 rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 premium-button-secondary"
                 >
                   Cancel
                 </button>
@@ -386,11 +388,11 @@ export const Bookings: React.FC = () => {
                   type="submit"
                   form="booking-form"
                   disabled={submitLoading}
-                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/10 active:scale-95 disabled:opacity-50 disabled:scale-100"
+                  className="flex-1 premium-button-primary"
                 >
                   {submitLoading ? (
                     <>
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       Reserving...
                     </>
                   ) : (

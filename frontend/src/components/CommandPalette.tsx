@@ -102,7 +102,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
             <input
               ref={inputRef}
               type="text"
-              className="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-slate-800 dark:text-zinc-150 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-0 text-sm"
+              className="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-0 text-sm"
               placeholder="Search assets, pages, or commands..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -167,7 +167,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
               )}
             </div>
           ) : (
-            <div className="p-10 text-center text-sm text-slate-450 dark:text-zinc-550">
+            <div className="p-10 text-center text-sm text-slate-450 dark:text-zinc-500">
               No results found for "{query}"
             </div>
           )}
