@@ -10,8 +10,9 @@ from app.schemas.schemas import DepartmentOut, DepartmentCreate
 router = APIRouter(prefix="/departments", tags=["departments"])
 
 @router.get("/", response_model=List[DepartmentOut])
-def get_departments(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_departments(db: Session = Depends(get_db)):
     return db.query(Department).all()
+
 
 @router.post("/", response_model=DepartmentOut, status_code=status.HTTP_201_CREATED)
 def create_department(
