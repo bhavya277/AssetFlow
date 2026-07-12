@@ -37,6 +37,17 @@ const PrivateRoute: React.FC = () => {
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
+// Role-Based Route Guard — redirects unauthorized roles to dashboard
+const RoleRoute: React.FC<{ allowedRoles: string[] }> = ({ allowedRoles }) => {
+  const { user } = useAuth();
+
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Outlet />;
+};
+
 // Main Layout Wrapper
 const DashboardLayout: React.FC = () => {
   const [isCommandOpen, setIsCommandOpen] = useState(false);
@@ -70,15 +81,23 @@ export const App: React.FC = () => {
               <Route element={<DashboardLayout />}>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/organization" element={<Organization />} />
                 <Route path="/assets" element={<AssetDirectory />} />
                 <Route path="/assets/:id" element={<AssetPassport />} />
-                <Route path="/allocations" element={<Allocations />} />
                 <Route path="/bookings" element={<Bookings />} />
                 <Route path="/maintenance" element={<Maintenance />} />
-                <Route path="/audits" element={<Audits />} />
-                <Route path="/reports" element={<Reports />} />
                 <Route path="/logs" element={<NotificationsPage />} />
+
+                {/* Admin & Asset Manager only */}
+                <Route element={<RoleRoute allowedRoles={['Admin', 'Asset Manager']} />}>
+                  <Route path="/organization" element={<Organization />} />
+                  <Route path="/audits" element={<Audits />} />
+                  <Route path="/reports" element={<Reports />} />
+                </Route>
+
+                {/* Admin, Asset Manager, Department Head */}
+                <Route element={<RoleRoute allowedRoles={['Admin', 'Asset Manager', 'Department Head']} />}>
+                  <Route path="/allocations" element={<Allocations />} />
+                </Route>
               </Route>
             </Route>
 

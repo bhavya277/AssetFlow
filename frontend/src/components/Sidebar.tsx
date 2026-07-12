@@ -22,17 +22,21 @@ export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuth();
 
+  const role = user?.role;
+
   const navigation = [
-    { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-    { name: 'Organization Setup', to: '/organization', icon: Building2 },
-    { name: 'Asset Directory', to: '/assets', icon: FolderTree },
-    { name: 'Allocation & Transfer', to: '/allocations', icon: Repeat },
-    { name: 'Resource Booking', to: '/bookings', icon: Calendar },
-    { name: 'Maintenance Management', to: '/maintenance', icon: Wrench },
-    { name: 'Asset Audit', to: '/audits', icon: FileCheck2 },
-    { name: 'Reports & Analytics', to: '/reports', icon: BarChart3 },
-    { name: 'Notifications & Logs', to: '/logs', icon: BellRing },
+    { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard, roles: ['Admin', 'Asset Manager', 'Department Head', 'Employee'] },
+    { name: 'Organization Setup', to: '/organization', icon: Building2, roles: ['Admin', 'Asset Manager'] },
+    { name: 'Asset Directory', to: '/assets', icon: FolderTree, roles: ['Admin', 'Asset Manager', 'Department Head', 'Employee'] },
+    { name: 'Allocation & Transfer', to: '/allocations', icon: Repeat, roles: ['Admin', 'Asset Manager', 'Department Head'] },
+    { name: 'Resource Booking', to: '/bookings', icon: Calendar, roles: ['Admin', 'Asset Manager', 'Department Head', 'Employee'] },
+    { name: 'Maintenance Management', to: '/maintenance', icon: Wrench, roles: ['Admin', 'Asset Manager', 'Department Head', 'Employee'] },
+    { name: 'Asset Audit', to: '/audits', icon: FileCheck2, roles: ['Admin', 'Asset Manager'] },
+    { name: 'Reports & Analytics', to: '/reports', icon: BarChart3, roles: ['Admin', 'Asset Manager'] },
+    { name: 'Notifications & Logs', to: '/logs', icon: BellRing, roles: ['Admin', 'Asset Manager', 'Department Head', 'Employee'] },
   ];
+
+  const filteredNav = navigation.filter((item) => role && item.roles.includes(role));
 
   return (
     <motion.div
@@ -90,7 +94,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Navigation Items */}
         <div className="px-4 py-6 space-y-1.5 flex-grow">
-          {navigation.map((item) => (
+          {filteredNav.map((item) => (
             <NavLink
               key={item.name}
               to={item.to}

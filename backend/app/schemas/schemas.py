@@ -30,6 +30,13 @@ class UserBase(BaseModel):
     role: Optional[str] = "Employee"
     department_id: Optional[int] = None
 
+class UserSignup(BaseModel):
+    """Schema for public signup — no role field allowed."""
+    email: EmailStr
+    full_name: str
+    password: str
+    department_id: Optional[int] = None
+
 class UserCreate(UserBase):
     password: str
 

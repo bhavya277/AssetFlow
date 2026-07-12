@@ -7,12 +7,12 @@ from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.core.dependencies import get_current_user, log_activity
 from app.models.models import User, Department
-from app.schemas.schemas import UserCreate, UserOut, Token
+from app.schemas.schemas import UserSignup, UserOut, Token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def signup(user_in: UserCreate, db: Session = Depends(get_db)):
+def signup(user_in: UserSignup, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user_in.email).first()
     if db_user:
         raise HTTPException(

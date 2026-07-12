@@ -29,10 +29,14 @@ def update_user_role(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Prevent admin from demoting themselves
+    if user.id == current_user.id and user_update.role and user_update.role != "Admin":
+        raise HTTPException(status_code=400, detail="You cannot change your own admin role")
+
+    old_role = user.role
     if user_update.role:
         if user_update.role not in ["Admin", "Asset Manager", "Department Head", "Employee"]:
             raise HTTPException(status_code=400, detail="Invalid role name")
-        old_role = user.role
         user.role = user_update.role
         
     if user_update.department_id is not None:

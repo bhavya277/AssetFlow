@@ -12,7 +12,13 @@ router = APIRouter(prefix="/bookings", tags=["bookings"])
 
 @router.get("/", response_model=List[BookingOut])
 def get_bookings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return db.query(Booking).all()
+    if current_user.role in ["Admin", "Asset Manager"]:
+        return db.query(Booking).all()
+    elif current_user.role == "Department Head":
+        dept_user_ids = [u.id for u in db.query(User).filter(User.department_id == current_user.department_id).all()]
+        return db.query(Booking).filter(Booking.booked_by_id.in_(dept_user_ids)).all()
+    else:
+        return db.query(Booking).filter(Booking.booked_by_id == current_user.id).all()
 
 @router.post("/", response_model=BookingOut, status_code=status.HTTP_201_CREATED)
 def create_booking(

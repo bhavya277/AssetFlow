@@ -10,9 +10,18 @@ from app.schemas.schemas import AllocationOut, AllocationCreate, TransferOut, Tr
 
 router = APIRouter(prefix="/allocations", tags=["allocations"])
 
+# Role-scoped: Employees see only their own allocations
 @router.get("/", response_model=List[AllocationOut])
 def get_allocations(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return db.query(Allocation).all()
+    if current_user.role in ["Admin", "Asset Manager"]:
+        return db.query(Allocation).all()
+    elif current_user.role == "Department Head":
+        # See allocations for users in the same department
+        dept_user_ids = [u.id for u in db.query(User).filter(User.department_id == current_user.department_id).all()]
+        return db.query(Allocation).filter(Allocation.allocated_to_id.in_(dept_user_ids)).all()
+    else:
+        # Employee: only their own
+        return db.query(Allocation).filter(Allocation.allocated_to_id == current_user.id).all()
 
 @router.post("/", response_model=AllocationOut, status_code=status.HTTP_201_CREATED)
 def allocate_asset(
@@ -35,6 +44,9 @@ def allocate_asset(
     recipient = db.query(User).filter(User.id == alloc_in.allocated_to_id).first()
     if not recipient:
         raise HTTPException(status_code=404, detail="Recipient user not found")
+
+    if not recipient.is_active:
+        raise HTTPException(status_code=400, detail="Cannot allocate to an inactive user")
 
     # Create allocation
     db_alloc = Allocation(
@@ -88,12 +100,24 @@ def return_asset(
     log_activity(db, current_user.id, "Return Asset", f"Asset returned: {asset.name if asset else 'Asset ID ' + str(alloc.asset_id)}")
     return alloc
 
-# Transfers List
+# Role-scoped: Employees see only their own transfers
 @router.get("/transfers", response_model=List[TransferOut])
 def get_transfers(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return db.query(Transfer).all()
+    if current_user.role in ["Admin", "Asset Manager"]:
+        return db.query(Transfer).all()
+    elif current_user.role == "Department Head":
+        # See transfers involving users in their department
+        dept_user_ids = [u.id for u in db.query(User).filter(User.department_id == current_user.department_id).all()]
+        return db.query(Transfer).filter(
+            (Transfer.requested_by_id.in_(dept_user_ids)) | (Transfer.target_employee_id.in_(dept_user_ids))
+        ).all()
+    else:
+        # Employee: only transfers they requested or are targets of
+        return db.query(Transfer).filter(
+            (Transfer.requested_by_id == current_user.id) | (Transfer.target_employee_id == current_user.id)
+        ).all()
 
-# Request Transfer
+# Request Transfer — Employees can only transfer assets allocated to them
 @router.post("/transfers", response_model=TransferOut, status_code=status.HTTP_201_CREATED)
 def request_transfer(
     transfer_in: TransferCreate,
@@ -109,6 +133,13 @@ def request_transfer(
         raise HTTPException(
             status_code=400,
             detail="Only allocated assets can be requested for transfer"
+        )
+
+    # Employees can only request transfer of assets allocated to them
+    if current_user.role == "Employee" and asset.current_holder_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only request transfer of assets allocated to you"
         )
 
     # Verify recipient exists
@@ -144,7 +175,7 @@ def request_transfer(
     log_activity(db, current_user.id, "Request Transfer", f"Requested transfer of {asset.name} to {target.full_name}")
     return db_transfer
 
-# Approve or Reject Transfer
+# Approve or Reject Transfer — Department Heads scoped to their department
 @router.post("/transfers/{transfer_id}/process", response_model=TransferOut)
 def process_transfer(
     transfer_id: int,
@@ -159,6 +190,17 @@ def process_transfer(
     asset = db.query(Asset).filter(Asset.id == transfer.asset_id).first()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
+
+    # Department Heads can only approve transfers within their department
+    if current_user.role == "Department Head":
+        requester = db.query(User).filter(User.id == transfer.requested_by_id).first()
+        target = db.query(User).filter(User.id == transfer.target_employee_id).first()
+        if (not requester or requester.department_id != current_user.department_id) and \
+           (not target or target.department_id != current_user.department_id):
+            raise HTTPException(
+                status_code=403,
+                detail="You can only approve transfers involving members of your department"
+            )
 
     if action.status == "Approved":
         # 1. Update previous active allocation to Returned

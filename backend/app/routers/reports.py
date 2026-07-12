@@ -5,13 +5,16 @@ from typing import List, Dict, Any
 from datetime import datetime
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user, User
+from app.core.dependencies import get_current_user, RoleChecker, User
 from app.models.models import Asset, AssetCategory, Allocation, MaintenanceTask, Booking
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 @router.get("/summary", response_model=Dict[str, Any])
-def get_report_summary(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_report_summary(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["Admin", "Asset Manager"]))
+):
     # 1. Base Counts
     total_assets = db.query(Asset).count()
     allocated_assets = db.query(Asset).filter(Asset.status == "Allocated").count()

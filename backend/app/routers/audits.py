@@ -11,11 +11,18 @@ from app.schemas.schemas import AuditSessionOut, AuditSessionCreate, AuditLogOut
 router = APIRouter(prefix="/audits", tags=["audits"])
 
 @router.get("/sessions", response_model=List[AuditSessionOut])
-def get_audit_sessions(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_audit_sessions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["Admin", "Asset Manager"]))
+):
     return db.query(AuditSession).all()
 
 @router.get("/sessions/{id}", response_model=Dict[str, Any])
-def get_audit_session_details(id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_audit_session_details(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["Admin", "Asset Manager"]))
+):
     session = db.query(AuditSession).filter(AuditSession.id == id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Audit session not found")
