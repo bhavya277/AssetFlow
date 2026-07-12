@@ -21,7 +21,7 @@ import {
   Repeat,
 } from 'lucide-react';
 import axios from 'axios';
-import { generateAssetPassportPdf } from '../utils/pdf';
+import { generateAssetPassportPdf, generateWarrantyPdf, generateManualPdf } from '../utils/pdf';
 
 interface AssetCategory {
   id: number;
@@ -305,20 +305,32 @@ export const AssetPassport: React.FC = () => {
           <div className="premium-card p-5">
             <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-xs mb-4">Verification Documents</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800">
-                <FileBadge className="h-7 w-7 text-zinc-500" />
+              <button
+                onClick={() => {
+                  generateWarrantyPdf(asset);
+                  showToast('Downloading warranty certificate...', 'success');
+                }}
+                className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 text-left hover:bg-zinc-100 dark:hover:bg-zinc-900/60 transition-colors w-full cursor-pointer"
+              >
+                <FileBadge className="h-7 w-7 text-zinc-500 flex-shrink-0" />
                 <div>
                   <h4 className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">Device Warranty Certificate</h4>
                   <p className="text-[9px] text-zinc-400 mt-0.5">PDF Document • 1.4 MB</p>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800">
-                <FileText className="h-7 w-7 text-zinc-500" />
+              </button>
+              <button
+                onClick={() => {
+                  generateManualPdf(asset);
+                  showToast('Downloading system technical manual...', 'success');
+                }}
+                className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 text-left hover:bg-zinc-100 dark:hover:bg-zinc-900/60 transition-colors w-full cursor-pointer"
+              >
+                <FileText className="h-7 w-7 text-zinc-500 flex-shrink-0" />
                 <div>
                   <h4 className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">System Technical Manual</h4>
                   <p className="text-[9px] text-zinc-400 mt-0.5">PDF Document • 4.8 MB</p>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>

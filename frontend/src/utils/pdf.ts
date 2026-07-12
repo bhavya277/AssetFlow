@@ -242,3 +242,78 @@ export const generateReportsPdf = (data: ReportsPdfData) => {
 
   doc.save(`AssetFlow_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
 };
+
+export const generateWarrantyPdf = (asset: AssetPdfData) => {
+  const doc = new jsPDF();
+  const margin = 14;
+  let y = 20;
+
+  doc.setFontSize(18);
+  doc.setTextColor(49, 46, 129);
+  doc.text('Device Warranty Certificate', margin, y);
+
+  y += 10;
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Certificate ID: WRN-${asset.qr_code_key.substring(0, 8).toUpperCase()}`, margin, y);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y + 5);
+
+  y += 20;
+  doc.setFontSize(12);
+  doc.setTextColor(30, 41, 59);
+  doc.text(`Asset Name: ${asset.name}`, margin, y);
+  doc.text(`Serial Number: ${asset.serial_number}`, margin, y + 8);
+  doc.text(`Warranty Expiration: ${asset.warranty_expiry || 'Not specified'}`, margin, y + 16);
+  doc.text(`Verification Status: VERIFIED & ACTIVE`, margin, y + 24);
+
+  y += 40;
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text('This document certifies that the hardware asset mentioned above is covered under the', margin, y);
+  doc.text('standard manufacturer and organizational warranty program.', margin, y + 5);
+
+  doc.save(`Warranty_Certificate_${asset.serial_number}.pdf`);
+};
+
+export const generateManualPdf = (asset: AssetPdfData) => {
+  const doc = new jsPDF();
+  const margin = 14;
+  let y = 20;
+
+  doc.setFontSize(18);
+  doc.setTextColor(49, 46, 129);
+  doc.text('System Technical Manual & Guidelines', margin, y);
+
+  y += 10;
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Manual Ref: MNL-${asset.qr_code_key.substring(0, 8).toUpperCase()}`, margin, y);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y + 5);
+
+  y += 20;
+  doc.setFontSize(12);
+  doc.setTextColor(30, 41, 59);
+  doc.text(`Target Asset: ${asset.name} (${asset.category?.name || 'Hardware'})`, margin, y);
+  doc.text(`Serial Number: ${asset.serial_number}`, margin, y + 8);
+
+  y += 25;
+  doc.setFontSize(11);
+  doc.setTextColor(30, 41, 59);
+  doc.text('1. Operational Safety Guidelines', margin, y);
+  doc.setFontSize(9);
+  doc.setTextColor(71, 85, 105);
+  doc.text('- Ensure power supply matches input voltage specified on the chassis.', margin, y + 6);
+  doc.text('- Keep ventilation vents clear of obstructions to prevent thermal throttling.', margin, y + 12);
+  doc.text('- Do not attempt to open the enclosure. Refer all servicing to authorized IT personnel.', margin, y + 18);
+
+  y += 30;
+  doc.setFontSize(11);
+  doc.setTextColor(30, 41, 59);
+  doc.text('2. Maintenance & Troubleshooting', margin, y);
+  doc.setFontSize(9);
+  doc.setTextColor(71, 85, 105);
+  doc.text('- Clean the exterior with lint-free static-discharging cloths only.', margin, y + 6);
+  doc.text('- In case of hardware failures, immediately file a maintenance request via the AssetFlow dashboard.', margin, y + 12);
+
+  doc.save(`Technical_Manual_${asset.serial_number}.pdf`);
+};
