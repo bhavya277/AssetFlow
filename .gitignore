@@ -1,0 +1,34 @@
+# Node.js
+**/node_modules/
+**/dist/
+**/.env
+**/.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+**/venv/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Databases
+**/assetflow.db
+**/assetflow.db-journal
+
+# IDE & OS
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

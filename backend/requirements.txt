@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic>=2.0
+email-validator
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+# For PostgreSQL support when configured in .env:
+psycopg2-binary
+
