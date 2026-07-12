@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Grid, List, Loader2, ArrowUpRight, MapPin, Tag, FileDown } from 'lucide-react';
 import axios from 'axios';
 import { generateAssetPassportPdf } from '../utils/pdf';
+import QRCode from 'qrcode';
 
 interface AssetCategory {
   id: number;
@@ -33,42 +34,46 @@ interface Asset {
   current_holder?: User;
 }
 
-export const QRVisualizer: React.FC<{ value: string; className?: string }> = ({ value: _value, className = "h-12 w-12" }) => {
+export const QRVisualizer: React.FC<{ value: string; className?: string }> = ({ value, className = "h-12 w-12" }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      QRCode.toCanvas(
+        canvasRef.current,
+        value || 'AssetFlow',
+        {
+          margin: 1,
+          scale: 4,
+          color: {
+            dark: isDark ? '#f4f4f5' : '#18181b',
+            light: isDark ? '#121214' : '#ffffff',
+          },
+        },
+        (error) => {
+          if (error) console.error('Error generating QR code:', error);
+        }
+      );
+    }
+  }, [value, isDark]);
+
   return (
-    <svg className={`${className} text-zinc-800 dark:text-zinc-200`} viewBox="0 0 100 100" fill="currentColor">
-      {/* Top-left square finder pattern */}
-      <rect x="10" y="10" width="20" height="20" />
-      <rect x="14" y="14" width="12" height="12" fill="white" className="dark:fill-zinc-900" />
-      <rect x="17" y="17" width="6" height="6" />
-      
-      {/* Top-right square finder pattern */}
-      <rect x="70" y="10" width="20" height="20" />
-      <rect x="74" y="14" width="12" height="12" fill="white" className="dark:fill-zinc-900" />
-      <rect x="77" y="17" width="6" height="6" />
-      
-      {/* Bottom-left square finder pattern */}
-      <rect x="10" y="70" width="20" height="20" />
-      <rect x="14" y="74" width="12" height="12" fill="white" className="dark:fill-zinc-900" />
-      <rect x="17" y="77" width="6" height="6" />
-      
-      {/* Random QR code pixels block */}
-      <rect x="40" y="15" width="6" height="6" />
-      <rect x="55" y="25" width="8" height="6" />
-      <rect x="45" y="38" width="6" height="8" />
-      <rect x="35" y="55" width="6" height="6" />
-      <rect x="50" y="50" width="10" height="6" />
-      <rect x="65" y="45" width="6" height="6" />
-      <rect x="75" y="55" width="10" height="8" />
-      <rect x="85" y="75" width="6" height="12" />
-      <rect x="65" y="75" width="8" height="6" />
-      <rect x="45" y="75" width="10" height="8" />
-      <rect x="55" y="85" width="6" height="6" />
-      <rect x="35" y="80" width="6" height="6" />
-      <rect x="40" y="65" width="6" height="6" />
-      <rect x="75" y="35" width="8" height="6" />
-      <rect x="85" y="45" width="6" height="6" />
-      <rect x="35" y="25" width="6" height="6" />
-    </svg>
+    <canvas 
+      ref={canvasRef} 
+      className={`${className} rounded border border-zinc-200/80 dark:border-zinc-800/80 p-0.5`} 
+    />
   );
 };
 
@@ -312,7 +317,7 @@ export const AssetDirectory: React.FC = () => {
                   <p className="text-[10px] text-zinc-400">SN: {asset.serial_number}</p>
                 </div>
                 <div className="p-1 border border-zinc-100 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-zinc-950/60 flex-shrink-0">
-                  <QRVisualizer value={asset.qr_code_key} className="h-8 w-8" />
+                  <QRVisualizer value={`Asset: ${asset.name}\nSN: ${asset.serial_number}\nID: ${asset.qr_code_key}\nCategory: ${asset.category?.name || 'Uncategorized'}\nLocation: ${asset.location}\nCondition: ${asset.condition}\nHealth: ${asset.health_score}%`} className="h-8 w-8" />
                 </div>
               </div>
 

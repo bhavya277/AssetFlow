@@ -25,18 +25,27 @@ interface Employee {
   department?: Department;
 }
 
+interface UserAccount {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  department_id?: number | null;
+}
+
 export const Organization: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   
-  // Navigation tabs: 'departments' | 'employees' | 'categories'
-  const [activeTab, setActiveTab] = useState<'departments' | 'employees' | 'categories'>('departments');
+  // Navigation tabs: 'departments' | 'employees' | 'categories' | 'users'
+  const [activeTab, setActiveTab] = useState<'departments' | 'employees' | 'categories' | 'users'>('departments');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Data lists
   const [departments, setDepartments] = useState<Department[]>([]);
   const [categories, setCategories] = useState<AssetCategory[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [usersList, setUsersList] = useState<UserAccount[]>([]);
 
   // Loading flags
   const [loading, setLoading] = useState(true);
@@ -64,11 +73,27 @@ export const Organization: React.FC = () => {
       setDepartments(deptsRes.data);
       setCategories(catsRes.data);
       setEmployees(empsRes.data);
+
+      if (user?.role === 'Admin') {
+        const usersRes = await axios.get<UserAccount[]>('/users');
+        setUsersList(usersRes.data);
+      }
     } catch (error) {
       console.error('Error loading setup data:', error);
       showToast('Failed to load organization records', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateRole = async (userId: number, newRole: string) => {
+    try {
+      await axios.put(`/users/${userId}/role`, { role: newRole });
+      showToast(`User role updated to ${newRole}`, 'success');
+      fetchData();
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || 'Failed to update user role';
+      showToast(msg, 'error');
     }
   };
 
@@ -219,6 +244,19 @@ export const Organization: React.FC = () => {
             <Users className="h-3.5 w-3.5" />
             Employee Directory
           </button>
+          {user?.role === 'Admin' && (
+            <button
+              onClick={() => { setActiveTab('users'); setSearchQuery(''); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${
+                activeTab === 'users'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                  : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Users className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+              User Accounts
+            </button>
+          )}
         </div>
 
         <div className="relative w-full sm:w-80">
@@ -294,7 +332,7 @@ export const Organization: React.FC = () => {
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : activeTab === 'employees' ? (
           /* EMPLOYEES TABLE */
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -311,7 +349,7 @@ export const Organization: React.FC = () => {
                   <tr key={e.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
                     <td className="px-6 py-3 font-semibold text-zinc-400">#{e.id}</td>
                     <td className="px-6 py-3 font-bold text-zinc-900 dark:text-zinc-100">{e.full_name}</td>
-                    <td className="px-6 py-3 font-medium text-zinc-555">{e.email}</td>
+                    <td className="px-6 py-3 font-medium text-zinc-500">{e.email}</td>
                     <td className="px-6 py-3">
                       <span className="inline-flex items-center px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-semibold border border-zinc-200 dark:border-zinc-700/60 text-[10px]">
                         {e.department?.name || 'Unassigned'}
@@ -322,6 +360,52 @@ export const Organization: React.FC = () => {
                 {filteredEmployees.length === 0 && (
                   <tr>
                     <td colSpan={4} className="text-center py-12 text-zinc-400">No employees matching search.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* USER ACCOUNTS TABLE */
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 text-[10px] font-bold uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800">
+                  <th className="px-6 py-3 font-semibold">User ID</th>
+                  <th className="px-6 py-3 font-semibold">Full Name</th>
+                  <th className="px-6 py-3 font-semibold">Work Email</th>
+                  <th className="px-6 py-3 font-semibold">System Role</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs text-zinc-700 dark:text-zinc-300">
+                {usersList
+                  .filter(u => 
+                    u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map(u => (
+                    <tr key={u.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                      <td className="px-6 py-3 font-semibold text-zinc-400">#{u.id}</td>
+                      <td className="px-6 py-3 font-bold text-zinc-900 dark:text-zinc-100">{u.full_name}</td>
+                      <td className="px-6 py-3 font-medium text-zinc-500">{u.email}</td>
+                      <td className="px-6 py-3">
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleUpdateRole(u.id, e.target.value)}
+                          disabled={u.id === user?.id}
+                          className="premium-input text-xs py-1 min-w-[130px] font-medium"
+                        >
+                          <option value="Employee">Employee</option>
+                          <option value="Department Head">Department Head</option>
+                          <option value="Asset Manager">Asset Manager</option>
+                          <option value="Admin">Admin</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                {usersList.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="text-center py-12 text-zinc-400">No user accounts loaded.</td>
                   </tr>
                 )}
               </tbody>

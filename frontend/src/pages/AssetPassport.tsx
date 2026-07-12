@@ -199,7 +199,7 @@ export const AssetPassport: React.FC = () => {
           {/* QR Code and Identity Card */}
           <div className="premium-card p-5 flex flex-col items-center justify-center text-center relative overflow-hidden">
             <div className="p-2 border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 rounded-lg mb-3">
-              <QRVisualizer value={asset.qr_code_key} className="h-24 w-24" />
+              <QRVisualizer value={`Asset: ${asset.name}\nSN: ${asset.serial_number}\nID: ${asset.qr_code_key}\nCategory: ${asset.category?.name || 'Uncategorized'}\nLocation: ${asset.location}\nCondition: ${asset.condition}\nHealth: ${asset.health_score}%`} className="h-24 w-24" />
             </div>
             <h3 className="font-bold text-zinc-800 dark:text-zinc-200 text-xs">Asset Passport ID</h3>
             <p className="text-[9px] font-mono text-zinc-400 mt-0.5 uppercase tracking-wider">{asset.qr_code_key}</p>
