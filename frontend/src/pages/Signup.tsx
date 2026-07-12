@@ -24,19 +24,39 @@ export const Signup: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDepts = async () => {
-      try {
-        const response = await axios.get<Department[]>('/departments');
-        setDepartments(response.data);
-      } catch (error) {
-        console.error('Error fetching departments:', error);
-        showToast('Failed to load departments. Please reload.', 'error');
-      } finally {
-        setLoadingDepts(false);
+    const fetchDepts = async (retries = 3) => {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await axios.get<Department[]>('/departments');
+          setDepartments(response.data);
+          setLoadingDepts(false);
+          return;
+        } catch (error) {
+          console.error(`Attempt ${attempt}/${retries} - Error fetching departments:`, error);
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 2000));
+          }
+        }
       }
+      showToast('Failed to load departments. Please check if the server is running.', 'error');
+      setLoadingDepts(false);
     };
     fetchDepts();
   }, [showToast]);
+
+  const retryDepts = async () => {
+    setLoadingDepts(true);
+    try {
+      const response = await axios.get<Department[]>('/departments');
+      setDepartments(response.data);
+      showToast('Departments loaded successfully!', 'success');
+    } catch (error) {
+      console.error('Retry failed:', error);
+      showToast('Still unable to load departments. Is the backend running?', 'error');
+    } finally {
+      setLoadingDepts(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,10 +175,10 @@ export const Signup: React.FC = () => {
                   onChange={(e) => setDepartmentId(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 dark:text-zinc-100 transition-all appearance-none"
                   required
-                  disabled={loadingDepts}
+                  disabled={loadingDepts || departments.length === 0}
                 >
                   <option value="" disabled>
-                    {loadingDepts ? 'Loading departments...' : 'Select your Department'}
+                    {loadingDepts ? 'Loading departments...' : departments.length === 0 ? 'No departments available' : 'Select your Department'}
                   </option>
                   {departments.map((dept) => (
                     <option key={dept.id} value={dept.id}>
@@ -167,6 +187,15 @@ export const Signup: React.FC = () => {
                   ))}
                 </select>
               </div>
+              {!loadingDepts && departments.length === 0 && (
+                <button
+                  type="button"
+                  onClick={retryDepts}
+                  className="mt-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                >
+                  ⟳ Failed to load departments — click to retry
+                </button>
+              )}
             </div>
 
             <div>
