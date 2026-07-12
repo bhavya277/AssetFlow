@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, Legend } from 'recharts';
-import { FileDown, Printer, Loader2, BarChart3, Wrench, ShieldAlert, Sparkles, TrendingUp, Info } from 'lucide-react';
+import { FileDown, Loader2, BarChart3, Wrench, Sparkles } from 'lucide-react';
 import axios from 'axios';
+import { generateReportsPdf } from '../utils/pdf';
 
 interface CategoryUtilization {
   category_name: string;
@@ -107,8 +108,15 @@ export const Reports: React.FC = () => {
     }
   };
 
-  const handlePrintPDF = () => {
-    window.print();
+  const handleGeneratePDF = () => {
+    if (!data) return;
+    try {
+      generateReportsPdf(data);
+      showToast('Analytics report PDF downloaded', 'success');
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      showToast('Failed to generate PDF report', 'error');
+    }
   };
 
   if (loading) {
@@ -136,9 +144,9 @@ export const Reports: React.FC = () => {
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 print:p-0 print:max-w-none">
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-zinc-150">
             Reports & Analytics
@@ -157,19 +165,13 @@ export const Reports: React.FC = () => {
             Export CSV
           </button>
           <button
-            onClick={handlePrintPDF}
+            onClick={handleGeneratePDF}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all hover:scale-[1.01] active:scale-95"
           >
-            <Printer className="h-4 w-4" />
-            Print Report
+            <FileDown className="h-4 w-4" />
+            Generate PDF
           </button>
         </div>
-      </div>
-
-      {/* Print-only layout header */}
-      <div className="hidden print:block text-center border-b pb-6 mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-800">AssetFlow ERP Report Summary</h1>
-        <p className="text-sm text-slate-500 mt-2">Generated on: {new Date().toLocaleString()}</p>
       </div>
 
       {/* KPI Cards Grid */}
@@ -257,7 +259,7 @@ export const Reports: React.FC = () => {
       </div>
 
       {/* Grids section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:break-inside-avoid">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Idle Assets List */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm space-y-4">
           <div>

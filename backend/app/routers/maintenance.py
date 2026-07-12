@@ -5,10 +5,23 @@ from datetime import datetime
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, RoleChecker, log_activity, create_notification
-from app.models.models import MaintenanceTask, Asset, User
+from app.models.models import MaintenanceTask, Asset, User, Allocation
 from app.schemas.schemas import MaintenanceTaskOut, MaintenanceTaskCreate, MaintenanceTaskUpdate
 
 router = APIRouter(prefix="/maintenance", tags=["maintenance"])
+
+
+def _user_holds_asset(db: Session, user_id: int, asset_id: int) -> bool:
+    asset = db.query(Asset).filter(Asset.id == asset_id).first()
+    if asset and asset.current_holder_id == user_id:
+        return True
+    active_allocation = db.query(Allocation).filter(
+        Allocation.asset_id == asset_id,
+        Allocation.allocated_to_id == user_id,
+        Allocation.status == "Active",
+    ).first()
+    return active_allocation is not None
+
 
 @router.get("/", response_model=List[MaintenanceTaskOut])
 def get_maintenance_tasks(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -30,6 +43,13 @@ def create_maintenance_task(
     asset = db.query(Asset).filter(Asset.id == task_in.asset_id).first()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
+
+    if current_user.role not in ["Admin", "Asset Manager"]:
+        if not _user_holds_asset(db, current_user.id, task_in.asset_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only request maintenance for assets currently assigned to you",
+            )
 
     # Create task
     db_task = MaintenanceTask(

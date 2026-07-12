@@ -161,6 +161,9 @@ class BookingBase(BaseModel):
 class BookingCreate(BookingBase):
     pass
 
+class BookingUpdate(BaseModel):
+    status: str  # Confirmed, Rejected
+
 class BookingOut(BaseModel):
     id: int
     asset_id: int

@@ -114,7 +114,7 @@ class Booking(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     purpose = Column(String, nullable=False)
-    status = Column(String, default="Confirmed")  # Confirmed, Cancelled
+    status = Column(String, default="Pending")  # Pending, Confirmed, Cancelled, Rejected
 
     asset = relationship("Asset", back_populates="bookings")
     booked_by = relationship("User", back_populates="bookings")

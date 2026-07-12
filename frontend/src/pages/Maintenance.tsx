@@ -10,6 +10,7 @@ interface Asset {
   name: string;
   serial_number: string;
   status: string;
+  current_holder_id?: number | null;
 }
 
 interface User {
@@ -51,6 +52,12 @@ export const Maintenance: React.FC = () => {
   const [editForm, setEditForm] = useState({ technician_name: '', cost: '', status: '' });
 
   const isManager = user?.role === 'Admin' || user?.role === 'Asset Manager';
+
+  const myAssets = isManager
+    ? assets
+    : assets.filter((a) => a.current_holder_id === user?.id);
+
+  const canReportIssue = isManager || myAssets.length > 0;
 
   const loadData = async () => {
     setLoading(true);
@@ -191,12 +198,19 @@ export const Maintenance: React.FC = () => {
         </div>
         <button
           onClick={() => setShowReportModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all hover:scale-[1.01] active:scale-95"
+          disabled={!canReportIssue}
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
         >
           <Wrench className="h-4 w-4" />
           Report Issue
         </button>
       </div>
+
+      {!isManager && !canReportIssue && !loading && (
+        <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl px-4 py-3">
+          You can only report maintenance for assets currently assigned to you. No allocated assets found.
+        </p>
+      )}
 
       {/* Search filter */}
       <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-4">
@@ -347,7 +361,7 @@ export const Maintenance: React.FC = () => {
               <div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Report Asset Issue</h2>
                 <p className="text-xs text-slate-500 mt-1">
-                  Log malfunctions, wear damage or technical faults.
+                  Log malfunctions, wear damage or technical faults for assets assigned to you.
                 </p>
 
                 <form id="report-form" onSubmit={handleReportIssue} className="mt-8 space-y-5">
@@ -362,10 +376,13 @@ export const Maintenance: React.FC = () => {
                       required
                     >
                       <option value="" disabled>Select Asset</option>
-                      {assets.map(a => (
+                      {myAssets.map(a => (
                         <option key={a.id} value={a.id}>{a.name} (SN: {a.serial_number})</option>
                       ))}
                     </select>
+                    {!isManager && myAssets.length === 0 && (
+                      <p className="text-[11px] text-amber-600 mt-2">No assets are currently assigned to you.</p>
+                    )}
                   </div>
 
                   <div>

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 
 from app.core.database import get_db
@@ -8,6 +8,32 @@ from app.models.models import User, Employee, Department
 from app.schemas.schemas import UserOut, UserUpdate, EmployeeOut, EmployeeCreate
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+def _sync_users_to_employees(db: Session) -> None:
+    """Ensure registered users appear in the employees directory."""
+    users = db.query(User).filter(
+        User.role.in_(["Employee", "Department Head"]),
+        User.is_active == True,
+        User.department_id.isnot(None),
+    ).all()
+
+    for user in users:
+        existing = db.query(Employee).filter(Employee.email == user.email).first()
+        if not existing:
+            db.add(Employee(
+                email=user.email,
+                full_name=user.full_name,
+                department_id=user.department_id,
+                user_id=user.id,
+            ))
+        else:
+            existing.full_name = user.full_name
+            existing.department_id = user.department_id
+            if not existing.user_id:
+                existing.user_id = user.id
+
+    db.commit()
 
 # Admin and Asset Manager can view users
 @router.get("/", response_model=List[UserOut])
@@ -50,13 +76,15 @@ def update_user_role(
     log_activity(db, current_user.id, "User Role Update", f"Updated user {user.email} role from {old_role} to {user.role}")
     return user
 
-# List employees
+# List employees (includes registered users synced from the users table)
 @router.get("/employees", response_model=List[EmployeeOut])
 def get_employees(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return db.query(Employee).all()
+    if current_user.role in ["Admin", "Asset Manager"]:
+        _sync_users_to_employees(db)
+    return db.query(Employee).options(joinedload(Employee.department)).all()
 
 # Create employee (Admin, Asset Manager)
 @router.post("/employees", response_model=EmployeeOut, status_code=status.HTTP_201_CREATED)

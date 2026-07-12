@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, Plus, Search, Loader2, XCircle, Info, CalendarRange, Clock } from 'lucide-react';
+import { CalendarDays, Plus, Search, Loader2, XCircle, CalendarRange, Clock, Check, X } from 'lucide-react';
 import axios from 'axios';
 
 interface Asset {
@@ -51,6 +51,8 @@ export const Bookings: React.FC = () => {
     purpose: '',
   });
 
+  const isApprover = user?.role === 'Admin' || user?.role === 'Asset Manager';
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -96,7 +98,10 @@ export const Bookings: React.FC = () => {
         purpose: form.purpose,
       });
 
-      showToast('Resource reserved successfully', 'success');
+      showToast(
+        isApprover ? 'Resource reserved successfully' : 'Booking request submitted for approval',
+        'success'
+      );
       setForm({ asset_id: '', start_time: '', end_time: '', purpose: '' });
       setShowModal(false);
       loadData();
@@ -105,6 +110,17 @@ export const Bookings: React.FC = () => {
       showToast(msg, 'error');
     } finally {
       setSubmitLoading(false);
+    }
+  };
+
+  const handleProcessBooking = async (id: number, status: 'Confirmed' | 'Rejected') => {
+    try {
+      await axios.post(`/bookings/${id}/process`, { status });
+      showToast(`Booking ${status === 'Confirmed' ? 'approved' : 'rejected'}`, 'success');
+      loadData();
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || 'Failed to process booking';
+      showToast(msg, 'error');
     }
   };
 
@@ -121,8 +137,9 @@ export const Bookings: React.FC = () => {
 
   // Filter Bookings (active first, matching query)
   const sortedBookings = [...bookings].sort((a, b) => {
-    if (a.status === 'Confirmed' && b.status === 'Cancelled') return -1;
-    if (a.status === 'Cancelled' && b.status === 'Confirmed') return 1;
+    const statusOrder: Record<string, number> = { Pending: 0, Confirmed: 1, Rejected: 2, Cancelled: 3 };
+    const orderDiff = (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4);
+    if (orderDiff !== 0) return orderDiff;
     return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
   });
 
@@ -140,6 +157,19 @@ export const Bookings: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const getStatusStyles = (status: string) => {
+    switch (status) {
+      case 'Confirmed':
+        return 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-100/30';
+      case 'Pending':
+        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-100/30';
+      case 'Rejected':
+        return 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-100/30';
+      default:
+        return 'bg-slate-100 dark:bg-zinc-800 text-slate-550';
+    }
   };
 
   return (
@@ -189,21 +219,20 @@ export const Bookings: React.FC = () => {
           {filteredBookings.map(b => (
             <motion.div
               key={b.id}
-              className={`bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm flex flex-col justify-between h-48 relative overflow-hidden group ${
-                b.status === 'Cancelled' ? 'opacity-65' : ''
+              className={`bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-sm flex flex-col justify-between min-h-48 relative overflow-hidden group ${
+                b.status === 'Cancelled' || b.status === 'Rejected' ? 'opacity-65' : ''
               }`}
             >
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
-                  <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                    b.status === 'Confirmed'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-100/30'
-                      : 'bg-slate-100 dark:bg-zinc-800 text-slate-550'
-                  }`}>
+                  <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusStyles(b.status)}`}>
                     {b.status}
                   </span>
                   <h3 className="font-bold text-slate-800 dark:text-zinc-150 text-sm line-clamp-1">{b.asset?.name || 'Unknown Resource'}</h3>
                   <p className="text-[10px] text-slate-400">Purpose: {b.purpose}</p>
+                  {b.booked_by && (
+                    <p className="text-[10px] text-slate-400">Requested by: {b.booked_by.full_name}</p>
+                  )}
                 </div>
                 <CalendarDays className="h-6 w-6 text-slate-350 dark:text-zinc-700" />
               </div>
@@ -220,16 +249,37 @@ export const Bookings: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Cancel button */}
-                {b.status === 'Confirmed' && (b.booked_by_id === user?.id || user?.role === 'Admin' || user?.role === 'Asset Manager') && (
-                  <button
-                    onClick={() => handleCancelBooking(b.id)}
-                    className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg border border-transparent hover:border-rose-100 transition-colors"
-                    title="Cancel Reservation"
-                  >
-                    <XCircle className="h-4.5 w-4.5" />
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {b.status === 'Pending' && isApprover && (
+                    <>
+                      <button
+                        onClick={() => handleProcessBooking(b.id, 'Confirmed')}
+                        className="p-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg transition-colors"
+                        title="Approve Booking"
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleProcessBooking(b.id, 'Rejected')}
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/80 border border-rose-200 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded-lg transition-colors"
+                        title="Reject Booking"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
+
+                  {(b.status === 'Confirmed' || b.status === 'Pending') &&
+                    (b.booked_by_id === user?.id || isApprover) && (
+                    <button
+                      onClick={() => handleCancelBooking(b.id)}
+                      className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg border border-transparent hover:border-rose-100 transition-colors"
+                      title="Cancel Reservation"
+                    >
+                      <XCircle className="h-4.5 w-4.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </motion.div>
           ))}
@@ -344,7 +394,7 @@ export const Bookings: React.FC = () => {
                       Reserving...
                     </>
                   ) : (
-                    'Confirm Reservation'
+                    'Submit Request'
                   )}
                 </button>
               </div>

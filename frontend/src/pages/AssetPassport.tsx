@@ -16,8 +16,11 @@ import {
   Sparkles,
   Heart,
   FileBadge,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
 import axios from 'axios';
+import { generateAssetPassportPdf } from '../utils/pdf';
 
 interface AssetCategory {
   id: number;
@@ -60,6 +63,7 @@ export const AssetPassport: React.FC = () => {
   const [asset, setAsset] = useState<Asset | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     const fetchAssetData = async () => {
@@ -81,6 +85,20 @@ export const AssetPassport: React.FC = () => {
     };
     fetchAssetData();
   }, [id, navigate, showToast]);
+
+  const handleDownloadPdf = () => {
+    if (!asset) return;
+    setPdfLoading(true);
+    try {
+      generateAssetPassportPdf(asset, timeline);
+      showToast('Asset passport PDF downloaded', 'success');
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      showToast('Failed to generate PDF', 'error');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -159,6 +177,14 @@ export const AssetPassport: React.FC = () => {
             Category: {asset.category?.name || 'Unassigned'} • Location: {asset.location}
           </p>
         </div>
+        <button
+          onClick={handleDownloadPdf}
+          disabled={pdfLoading}
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/10 transition-all active:scale-95 disabled:opacity-50"
+        >
+          {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+          Download PDF
+        </button>
       </div>
 
       {/* Grid Layout */}

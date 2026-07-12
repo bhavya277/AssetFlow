@@ -31,14 +31,38 @@ def _count_pending_transfers(db: Session, current_user: User) -> int:
     ).count()
 
 
+def _count_owned_assets(db: Session, current_user: User) -> int:
+    """Count currently owned/allocated resources (role-scoped)."""
+    if current_user.role in ["Admin", "Asset Manager"]:
+        return db.query(Asset).filter(Asset.status == "Allocated").count()
+
+    if current_user.role == "Department Head":
+        dept_user_ids = [
+            u.id for u in db.query(User).filter(User.department_id == current_user.department_id).all()
+        ]
+        if not dept_user_ids:
+            return 0
+        return db.query(Asset).filter(
+            Asset.status == "Allocated",
+            Asset.current_holder_id.in_(dept_user_ids),
+        ).count()
+
+    return db.query(Asset).filter(
+        Asset.status == "Allocated",
+        Asset.current_holder_id == current_user.id,
+    ).count()
+
+
+@router.get("", response_model=Dict[str, Any])
 @router.get("/", response_model=Dict[str, Any])
 def get_dashboard(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    total_assets = db.query(Asset).count()
+    total_catalog = db.query(Asset).count()
     allocated_assets = db.query(Asset).filter(Asset.status == "Allocated").count()
-    utilization_rate = round((allocated_assets / total_assets) * 100, 1) if total_assets > 0 else 0.0
+    utilization_rate = round((allocated_assets / total_catalog) * 100, 1) if total_catalog > 0 else 0.0
+    owned_assets = _count_owned_assets(db, current_user)
 
     active_maintenance = db.query(MaintenanceTask).filter(
         MaintenanceTask.status.in_(["In Progress", "Requested"])
@@ -69,7 +93,7 @@ def get_dashboard(
 
     return {
         "stats": {
-            "total_assets": total_assets,
+            "total_assets": owned_assets,
             "utilization_rate": utilization_rate,
             "pending_transfers": _count_pending_transfers(db, current_user),
             "active_maintenance": active_maintenance,

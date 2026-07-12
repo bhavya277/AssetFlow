@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Grid, List, Loader2, ArrowUpRight, ShieldAlert, Sparkles, MapPin, Tag } from 'lucide-react';
+import { Plus, Search, Grid, List, Loader2, ArrowUpRight, MapPin, Tag, FileDown } from 'lucide-react';
 import axios from 'axios';
+import { generateAssetPassportPdf } from '../utils/pdf';
 
 interface AssetCategory {
   id: number;
@@ -85,6 +86,7 @@ export const AssetDirectory: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [pdfLoadingId, setPdfLoadingId] = useState<number | null>(null);
 
   // Form registration state
   const [form, setForm] = useState({
@@ -103,14 +105,17 @@ export const AssetDirectory: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [assetsRes, catsRes, usersRes] = await Promise.all([
+      const [assetsRes, catsRes] = await Promise.all([
         axios.get<Asset[]>('/assets/'),
         axios.get<AssetCategory[]>('/categories/'),
-        axios.get<User[]>('/users/'),
       ]);
       setAssets(assetsRes.data);
       setCategories(catsRes.data);
-      setUsers(usersRes.data);
+
+      if (isEditable) {
+        const usersRes = await axios.get<User[]>('/users/');
+        setUsers(usersRes.data);
+      }
     } catch (error) {
       console.error('Error fetching assets:', error);
       showToast('Failed to load asset directory', 'error');
@@ -121,7 +126,7 @@ export const AssetDirectory: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [isEditable]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,6 +163,24 @@ export const AssetDirectory: React.FC = () => {
       showToast(msg, 'error');
     } finally {
       setSubmitLoading(false);
+    }
+  };
+
+  const handleDownloadPdf = async (assetId: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setPdfLoadingId(assetId);
+    try {
+      const [assetRes, timelineRes] = await Promise.all([
+        axios.get(`/assets/${assetId}`),
+        axios.get(`/assets/${assetId}/timeline`),
+      ]);
+      generateAssetPassportPdf(assetRes.data, timelineRes.data);
+      showToast('Asset passport PDF downloaded', 'success');
+    } catch (error) {
+      console.error('PDF download failed:', error);
+      showToast('Failed to download asset PDF', 'error');
+    } finally {
+      setPdfLoadingId(null);
     }
   };
 
@@ -313,6 +336,14 @@ export const AssetDirectory: React.FC = () => {
                   <span className={`inline-block border px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mt-1.5 ${getConditionStyle(asset.condition)}`}>
                     {asset.condition}
                   </span>
+                  <button
+                    onClick={(e) => handleDownloadPdf(asset.id, e)}
+                    disabled={pdfLoadingId === asset.id}
+                    className="mt-2 flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 ml-auto disabled:opacity-50"
+                  >
+                    {pdfLoadingId === asset.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
+                    PDF
+                  </button>
                 </div>
               </div>
               
@@ -365,16 +396,26 @@ export const AssetDirectory: React.FC = () => {
                   <td className="px-6 py-4 text-slate-500 dark:text-zinc-400">{asset.location}</td>
                   <td className="px-6 py-4 text-slate-500 dark:text-zinc-400">{asset.category?.name || 'Uncategorized'}</td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/assets/${asset.id}`);
-                      }}
-                      className="text-xs font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center gap-0.5"
-                    >
-                      Passport
-                      <ArrowUpRight className="h-3 w-3" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/assets/${asset.id}`);
+                        }}
+                        className="text-xs font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 flex items-center gap-0.5"
+                      >
+                        Passport
+                        <ArrowUpRight className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDownloadPdf(asset.id, e)}
+                        disabled={pdfLoadingId === asset.id}
+                        className="text-xs font-bold text-slate-600 hover:text-indigo-600 dark:text-zinc-400 flex items-center gap-0.5 disabled:opacity-50"
+                      >
+                        {pdfLoadingId === asset.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
+                        PDF
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -6,7 +6,7 @@ from datetime import timedelta
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.core.dependencies import get_current_user, log_activity
-from app.models.models import User, Department
+from app.models.models import User, Department, Employee
 from app.schemas.schemas import UserSignup, UserOut, Token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -44,6 +44,15 @@ def signup(user_in: UserSignup, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    if db_user.department_id and db_user.role in ["Employee", "Department Head"]:
+        db.add(Employee(
+            email=db_user.email,
+            full_name=db_user.full_name,
+            department_id=db_user.department_id,
+            user_id=db_user.id,
+        ))
+        db.commit()
 
     log_activity(db, db_user.id, "Auth - Signup", f"User registered with role {role}")
     return db_user

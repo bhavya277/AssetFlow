@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import {
@@ -11,7 +12,7 @@ import {
   CalendarDays,
   UserCheck,
 } from 'lucide-react';
-import axios from 'axios';
+import axios from '../context/AuthContext';
 
 interface DashboardStats {
   totalAssets: number;
@@ -55,8 +56,106 @@ interface DashboardData {
   recent_activity: Activity[];
 }
 
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const applyDashboardData = (
+  data: DashboardData,
+  setStats: React.Dispatch<React.SetStateAction<DashboardStats>>,
+  setUtilizationData: React.Dispatch<React.SetStateAction<CategoryUtilization[]>>,
+  setMaintenanceTrendData: React.Dispatch<React.SetStateAction<MaintenanceTrend[]>>,
+  setActivities: React.Dispatch<React.SetStateAction<Activity[]>>,
+) => {
+  setStats({
+    totalAssets: data.stats.total_assets,
+    utilizationRate: data.stats.utilization_rate,
+    pendingTransfers: data.stats.pending_transfers,
+    maintenanceToday: data.stats.active_maintenance,
+  });
+  setUtilizationData(data.categories_utilization);
+  setMaintenanceTrendData(data.maintenance_trends);
+  setActivities(data.recent_activity);
+};
+
+const fetchDashboardFallback = async (user: { id: number; role: string }): Promise<DashboardData> => {
+  const [assetsRes, categoriesRes, maintenanceRes, transfersRes] = await Promise.all([
+    axios.get<Array<{ id: number; status: string; category_id: number; current_holder_id?: number | null }>>('/assets/'),
+    axios.get<Array<{ id: number; name: string }>>('/categories/'),
+    axios.get<Array<{ status: string; cost: number; created_at: string }>>('/maintenance/'),
+    axios.get<Array<{ status: string }>>('/allocations/transfers'),
+  ]);
+
+  const assets = assetsRes.data;
+  const categories = categoriesRes.data;
+  const maintenance = maintenanceRes.data;
+  const transfers = transfersRes.data;
+
+  const total = assets.length;
+  const allocated = assets.filter((a) => a.status === 'Allocated').length;
+  const owned =
+    user.role === 'Admin' || user.role === 'Asset Manager'
+      ? allocated
+      : assets.filter((a) => a.status === 'Allocated' && a.current_holder_id === user.id).length;
+  const utilizationRate = total > 0 ? Math.round((allocated / total) * 1000) / 10 : 0;
+
+  const categoriesUtilization = categories.map((cat) => {
+    const catAssets = assets.filter((a) => a.category_id === cat.id);
+    const catAllocated = catAssets.filter((a) => a.status === 'Allocated').length;
+    const catTotal = catAssets.length;
+    return {
+      category_name: cat.name,
+      allocated: catAllocated,
+      total: catTotal,
+      rate: catTotal > 0 ? Math.round((catAllocated / catTotal) * 1000) / 10 : 0,
+    };
+  });
+
+  const now = new Date();
+  const maintenanceTrends: MaintenanceTrend[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const month = monthDate.getMonth();
+    const year = monthDate.getFullYear();
+    const cost = maintenance
+      .filter((m) => {
+        const created = new Date(m.created_at);
+        return created.getMonth() === month && created.getFullYear() === year;
+      })
+      .reduce((sum, m) => sum + (m.cost || 0), 0);
+    maintenanceTrends.push({
+      month: MONTH_LABELS[month],
+      cost: Math.round(cost * 100) / 100,
+    });
+  }
+
+  let recentActivity: Activity[] = [];
+  const isManager = user.role === 'Admin' || user.role === 'Asset Manager';
+  if (isManager) {
+    try {
+      const logsRes = await axios.get<Activity[]>('/notifications/activity-logs');
+      recentActivity = logsRes.data.slice(0, 5);
+    } catch {
+      // Activity logs are manager-only; ignore if unavailable
+    }
+  }
+
+  return {
+    stats: {
+      total_assets: owned,
+      utilization_rate: utilizationRate,
+      pending_transfers: transfers.filter((t) => t.status === 'Pending').length,
+      active_maintenance: maintenance.filter(
+        (m) => m.status === 'In Progress' || m.status === 'Requested',
+      ).length,
+    },
+    categories_utilization: categoriesUtilization,
+    maintenance_trends: maintenanceTrends,
+    recent_activity: recentActivity,
+  };
+};
+
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [stats, setStats] = useState<DashboardStats>({
     totalAssets: 0,
     utilizationRate: 0,
@@ -71,29 +170,35 @@ export const Dashboard: React.FC = () => {
   const isManager = user?.role === 'Admin' || user?.role === 'Asset Manager';
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await axios.get<DashboardData>('/dashboard');
-        const data = response.data;
+    if (!user) return;
 
-        setStats({
-          totalAssets: data.stats.total_assets,
-          utilizationRate: data.stats.utilization_rate,
-          pendingTransfers: data.stats.pending_transfers,
-          maintenanceToday: data.stats.active_maintenance,
-        });
-        setUtilizationData(data.categories_utilization);
-        setMaintenanceTrendData(data.maintenance_trends);
-        setActivities(data.recent_activity);
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        let data: DashboardData;
+        try {
+          const response = await axios.get<DashboardData>('/dashboard/');
+          data = response.data;
+        } catch (error: unknown) {
+          const status = (error as { response?: { status?: number } }).response?.status;
+          if (status === 404) {
+            data = await fetchDashboardFallback(user);
+          } else {
+            throw error;
+          }
+        }
+
+        applyDashboardData(data, setStats, setUtilizationData, setMaintenanceTrendData, setActivities);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
+        showToast('Failed to load dashboard data. Please restart the backend server.', 'error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [user, isManager, showToast]);
 
   const formatLogDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString(undefined, {
@@ -123,7 +228,7 @@ export const Dashboard: React.FC = () => {
     {
       title: 'Total Assets Owned',
       value: stats.totalAssets,
-      change: 'Across all categories',
+      change: isManager ? 'Currently allocated resources' : 'Resources assigned to you',
       icon: FolderOpen,
       color: 'indigo',
     },
